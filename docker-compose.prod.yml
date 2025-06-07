@@ -59,24 +59,31 @@ services:
   anvil:
     image: ghcr.io/foundry-rs/foundry
     container_name: anvil
+    environment:
+      ANVIL_IP_ADDR: "0.0.0.0"
     working_dir: /anvil
     ports:
       - "8545:8545"
     entrypoint: ["anvil", "--allow-origin", "*", "--block-time", "5"]
 
   backend:
-    # volumes:
-    #   - ./run:/app
-    #   - ./run/.env:/app/.env
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    volumes:
+      - ./run:/app
+      - ./run/.env:/app/.env
+    ports:
+      - "8888:8888"
     networks:
       - ethernal
-    image: antoinedc44/ethernal-backend:latest
+    # image: antoinedc44/ethernal-backend:latest
     container_name: backend
     depends_on:
       - postgres
       - redis
     restart: always
-    # command: npm run start
+    command: npm run start
     env_file: ./run/.env.prod
 
   high_priority_worker:

@@ -20,11 +20,22 @@ Set the environment variable `VITE_VERIFICATION_CONTRACT_ADDRESS` to the address
 export VITE_VERIFICATION_CONTRACT_ADDRESS=0x5FbDB2315678afecb367f032d93F642f64180aa3
 ```
 
-Or add both to your `.env` file:
+### eVND Dashboard Verifier Configuration
+
+Set the environment variables for verifier addresses displayed in the dashboard:
+
+```bash
+export VITE_VERIFIER_ADDRESS_1=0x7099B1E00D8b9aaEc2A87AaE0b1eA9Be79C8
+export VITE_VERIFIER_ADDRESS_2=0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
+```
+
+Or add all to your `.env` file:
 
 ```
 VITE_SPECIAL_TOKEN_ADDRESS=0xYourTokenAddressHere
 VITE_VERIFICATION_CONTRACT_ADDRESS=0x5FbDB2315678afecb367f032d93F642f64180aa3
+VITE_VERIFIER_ADDRESS_1=0x7099B1E00D8b9aaEc2A87AaE0b1eA9Be79C8
+VITE_VERIFIER_ADDRESS_2=0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
 ```
 
 ### Verification Contract Requirements
@@ -80,6 +91,18 @@ When the eVND token is configured, the following elements will be highlighted:
 - **In eVND transfer lists**: Verification badges appear next to source and destination addresses
   - Small green checkmark icons for verified entities
   - Hover tooltip shows "Verified Entity" message
+
+### 6. eVND Dashboard
+- **Dedicated Dashboard**: Available at `/evnd-dashboard` and accessible from the main navigation
+- **System Status**: Overview of eVND CBDC system components and addresses
+- **Verifier Section**: Displays authorized verifiers with their addresses and status
+  - Configurable verifier addresses through environment variables
+  - Clickable address chips that navigate to address pages
+  - Real-time status indicators (Active/Inactive)
+- **Exchange Portal Status**: 
+  - Current government-controlled exchange rates
+  - Real-time money flow analytics with daily, monthly, and yearly statistics
+  - Transaction volume tracking
 
 ## Styling
 

@@ -27,6 +27,7 @@ import TopNFT from '../components/TopNFT.vue';
 import WorkspaceTokenTransfer from '../components/WorkspaceTokenTransfer.vue';
 import WorkspaceNFTTransfer from '../components/WorkspaceNFTTransfer.vue';
 import TokenContract from '../components/TokenContract.vue';
+import EvndDashboard from '../components/EvndDashboard.vue';
 import { useEnvStore } from '../stores/env';
 import VerifiedContracts from '@/components/VerifiedContracts.vue'
 
@@ -75,6 +76,7 @@ const routes = [
     { path: '/auth', component: Auth, beforeEnter: redirectIfLoggedIn },
     { path: '/blocks', component: Blocks, beforeEnter: redirectIfLoggedOut },
     { path: '/overview', component: Overview, beforeEnter: redirectIfLoggedOut },
+    { path: '/evnd-dashboard', component: EvndDashboard, beforeEnter: redirectIfLoggedOut },
     { path: '/block/:number', component: Block, props: true, beforeEnter: redirectIfLoggedOut },
     { path: '/gas', component: GasTracker, beforeEnter: redirectIfLoggedOut },
     { path: '/transactions', component: Transactions, beforeEnter: redirectIfLoggedOut },
