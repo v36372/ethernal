@@ -18,6 +18,7 @@ export const useEnvStore = defineStore('env', {
         apiRoot: '',
         maxV2DexPairsForTrial: 20,
         nativeTokenAddress: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+        specialTokenAddress: import.meta.env.VITE_SPECIAL_TOKEN_ADDRESS?.toLowerCase() || '0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9',
         chains: {
             ethereum: {
                 slug: 'ethereum',
@@ -66,6 +67,10 @@ export const useEnvStore = defineStore('env', {
 
         isOnMainDomain: (state) => {
             return window.location.host === state.mainDomain;
+        },
+
+        hasSpecialToken: (state) => {
+            return !!state.specialTokenAddress;
         }
     }
 });

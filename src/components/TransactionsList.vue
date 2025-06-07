@@ -90,6 +90,7 @@ import HashLink from './HashLink.vue';
 
 import { useCurrentWorkspaceStore } from '@/stores/currentWorkspace';
 import { getGasPriceFromTransaction } from '@/lib/utils';
+import { useSpecialToken } from '@/composables/useSpecialToken';
 
 const props = defineProps({
     currentAddress: String,
@@ -104,6 +105,7 @@ const emit = defineEmits(['listUpdated']);
 const currentWorkspaceStore = useCurrentWorkspaceStore();
 const $server = inject('$server');
 const $pusher = inject('$pusher');
+const { hasSpecialTokenTransfer, getSpecialTokenHighlightClasses } = useSpecialToken();
 
 const currentOptions = ref({ page: 1, itemsPerPage: 10, sortBy: [{ key: 'timestamp', order: 'desc' }] });
 const transactions = shallowRef([]);
@@ -148,8 +150,14 @@ const getTransactions = ({ page, itemsPerPage, sortBy }) => {
 };
 
 const rowClasses = (item) => {
-    if (item.state == 'syncing')
-        return 'isSyncing'
+    const classes = [];
+    if (item.state == 'syncing') {
+        classes.push('isSyncing');
+    }
+    if (hasSpecialTokenTransfer(item)) {
+        classes.push(getSpecialTokenHighlightClasses());
+    }
+    return classes.join(' ');
 };
 
 const getMethodName = (transaction) => {
@@ -241,6 +249,13 @@ onUnmounted(() => {
 :deep(.isSyncing) {
     font-style: italic;
     opacity: 0.7;
+}
+:deep(.special-token-highlight) {
+    background: linear-gradient(90deg, rgba(255, 193, 7, 0.1) 0%, rgba(255, 193, 7, 0.05) 100%) !important;
+    border-left: 4px solid #FFC107 !important;
+}
+:deep(.special-token-highlight):hover {
+    background: linear-gradient(90deg, rgba(255, 193, 7, 0.15) 0%, rgba(255, 193, 7, 0.08) 100%) !important;
 }
 .methodName {
     display: block;
