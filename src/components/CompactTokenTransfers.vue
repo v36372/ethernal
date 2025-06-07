@@ -48,7 +48,7 @@
                 color="amber" 
                 size="small" 
                 class="mr-1"
-                v-tooltip="'Special Token Transfer'"
+                v-tooltip="'eVND Transfer'"
               >
                 mdi-star
               </v-icon>
@@ -80,7 +80,7 @@
                 variant="flat"
                 class="ml-1"
               >
-                SPECIAL
+                eVND
               </v-chip>
             </span>
           </span>

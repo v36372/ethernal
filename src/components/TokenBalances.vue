@@ -19,7 +19,7 @@
                         color="amber" 
                         size="small" 
                         class="mr-2"
-                        v-tooltip="'Special Token'"
+                        v-tooltip="'eVND'"
                     >
                         mdi-star
                     </v-icon>
@@ -38,7 +38,7 @@
                         variant="flat"
                         class="ml-2"
                     >
-                        SPECIAL
+                        eVND
                     </v-chip>
                 </div>
             </template>

@@ -56,6 +56,14 @@ services:
     command: yarn serve
     restart: always
 
+  anvil:
+    image: ghcr.io/foundry-rs/foundry
+    container_name: anvil
+    working_dir: /anvil
+    ports:
+      - "8545:8545"
+    entrypoint: ["anvil", "--allow-origin", "*", "--block-time", "5"]
+
   backend:
     # volumes:
     #   - ./run:/app

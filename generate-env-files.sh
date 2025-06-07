@@ -45,7 +45,7 @@ FIREBASE_SIGNER_KEY=$(openssl rand -base64 64 | sed 's/"/\\"/g')
 FIREBASE_SALT_SEPARATOR=$(openssl rand -base64 16 | sed 's/"/\\"/g')
 POSTGRES_HOST="postgres"
 POSTGRES_USER="postgres"
-POSTGRES_PASSWORD="hellowold"
+POSTGRES_PASSWORD="hellowolrd"
 POSTGRES_DB="ethernal"
 
 # Generate md5-hashed password for PgBouncer (md5 + md5(PASSWORD + USERNAME))

@@ -18,7 +18,8 @@ export const useEnvStore = defineStore('env', {
         apiRoot: '',
         maxV2DexPairsForTrial: 20,
         nativeTokenAddress: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-        specialTokenAddress: import.meta.env.VITE_SPECIAL_TOKEN_ADDRESS?.toLowerCase() || '0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9',
+        specialTokenAddress: import.meta.env.VITE_SPECIAL_TOKEN_ADDRESS?.toLowerCase() || '0xdc64a140aa3e981100a9beca4e685f962f0cf6c9',
+        verificationContractAddress: import.meta.env.VITE_VERIFICATION_CONTRACT_ADDRESS || '0x5FbDB2315678afecb367f032d93F642f64180aa3',
         chains: {
             ethereum: {
                 slug: 'ethereum',
@@ -71,6 +72,10 @@ export const useEnvStore = defineStore('env', {
 
         hasSpecialToken: (state) => {
             return !!state.specialTokenAddress;
+        },
+
+        hasVerificationContract: (state) => {
+            return !!state.verificationContractAddress;
         }
     }
 });

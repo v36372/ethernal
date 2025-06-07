@@ -123,12 +123,12 @@
         <template v-slot:item.token="{ item }">
             <div class="d-flex flex-column token-cell" v-if="isERC20(item)">
                 <div class="d-flex align-center">
-                    <v-icon
-                        v-if="isSpecialTokenTransfer(item)"
-                        color="amber"
-                        size="small"
+                                        <v-icon 
+                        v-if="isSpecialTokenTransfer(item)" 
+                        color="amber" 
+                        size="small" 
                         class="mr-2"
-                        v-tooltip="'Special Token Transfer'"
+                        v-tooltip="'eVND Transfer'"
                     >
                         mdi-star
                     </v-icon>
@@ -141,14 +141,14 @@
                         :tokenId="item.tokenId"
                         :contract="item.contract"
                     />
-                    <v-chip
-                        v-if="isSpecialTokenTransfer(item)"
-                        color="amber"
-                        size="x-small"
+                                        <v-chip 
+                        v-if="isSpecialTokenTransfer(item)" 
+                        color="amber" 
+                        size="x-small" 
                         variant="flat"
                         class="ml-2"
                     >
-                        SPECIAL
+                        eVND
                     </v-chip>
                 </div>
                 <span class="text-caption text-medium-emphasis" v-if="item.contract?.tokenName && item.contract?.tokenSymbol">

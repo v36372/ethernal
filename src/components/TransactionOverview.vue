@@ -132,7 +132,7 @@
                     class="ml-2"
                     prepend-icon="mdi-star"
                   >
-                    SPECIAL TOKEN
+                    eVND TOKEN
                   </v-chip>
                 </div>
               </template>
