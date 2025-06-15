@@ -79,7 +79,14 @@ module.exports = (sequelize, DataTypes) => {
                 trigger(`private-blocks;workspace=${this.workspaceId}`, 'new', { number: this.number, withTransactions: this.transactionsCount > 0 });
 
             const workspace = await this.getWorkspace();
-            if (workspace.public) {
+            
+            // Allow processing for private workspaces if they're using localhost RPC (for local development)
+            const isLocalDevelopment = workspace.rpcServer && 
+                (workspace.rpcServer.includes('localhost') || 
+                 workspace.rpcServer.includes('127.0.0.1') ||
+                 workspace.rpcServer.includes('0.0.0.0'));
+
+            if (workspace.public || isLocalDevelopment) {
                 await enqueue('removeStalledBlock', `removeStalledBlock-${this.id}`, { blockId: this.id }, null, null, STALLED_BLOCK_REMOVAL_DELAY);
 
                 if (workspace.tracing && workspace.tracing != 'hardhat') {

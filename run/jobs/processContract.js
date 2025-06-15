@@ -167,7 +167,13 @@ module.exports = async job => {
 
     let asm, bytecode, hashedBytecode;
 
-    if (workspace.public) {
+    // Allow bytecode fetching for private workspaces if they're using localhost RPC (for local development)
+    const isLocalDevelopmentForBytecode = workspace.rpcServer && 
+        (workspace.rpcServer.includes('localhost') || 
+         workspace.rpcServer.includes('127.0.0.1') ||
+         workspace.rpcServer.includes('0.0.0.0'));
+
+    if (workspace.public || isLocalDevelopmentForBytecode) {
         const connector = new ContractConnector(workspace.rpcServer, contract.address, []);
         bytecode = await connector.getBytecode();
     }
@@ -200,7 +206,13 @@ module.exports = async job => {
         scannerMetadata = {};
 
     const abi = contract.abi || scannerMetadata.abi;
-    const tokenData = workspace.public ? await findPatterns(workspace.rpcServer, contract.address, abi) : {};
+    // Allow pattern detection for private workspaces if they're using localhost RPC (for local development)
+    const isLocalDevelopment = workspace.rpcServer && 
+        (workspace.rpcServer.includes('localhost') || 
+         workspace.rpcServer.includes('127.0.0.1') ||
+         workspace.rpcServer.includes('0.0.0.0'));
+
+    const tokenData = (workspace.public || isLocalDevelopment) ? await findPatterns(workspace.rpcServer, contract.address, abi) : {};
 
     let metadata = sanitize({
         bytecode, hashedBytecode, asm, abi,

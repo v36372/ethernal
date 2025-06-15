@@ -30,8 +30,14 @@ module.exports = async job => {
     if (!workspace)
         return 'Cannot find workspace';
 
-    if (!workspace.public)
-        return 'Not allowed on private workspaces';
+    // Allow processing for private workspaces if they're using localhost RPC (for local development)
+    const isLocalDevelopment = workspace.rpcServer && 
+        (workspace.rpcServer.includes('localhost') || 
+         workspace.rpcServer.includes('127.0.0.1') ||
+         workspace.rpcServer.includes('0.0.0.0'));
+
+    if (!workspace.public && !isLocalDevelopment)
+        return 'Not allowed on private workspaces (unless local development)';
 
     if (workspace.skipIntegrityCheck)
         return 'Integrity check disabled';

@@ -62,8 +62,14 @@ module.exports = async job => {
 
     const workspace = transaction.workspace;
 
-    if (!workspace.public)
-        return 'Cannot sync on private workspace';
+    // Allow processing for private workspaces if they're using localhost RPC (for local development)
+    const isLocalDevelopment = workspace.rpcServer && 
+        (workspace.rpcServer.includes('localhost') || 
+         workspace.rpcServer.includes('127.0.0.1') ||
+         workspace.rpcServer.includes('0.0.0.0'));
+
+    if (!workspace.public && !isLocalDevelopment)
+        return 'Cannot sync on private workspace (unless local development)';
 
     if (!workspace.explorer)
         return 'Inactive explorer';

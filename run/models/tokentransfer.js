@@ -119,7 +119,13 @@ module.exports = (sequelize, DataTypes) => {
             ]
         });
 
-        if (transaction.workspace.public) {
+        // Check if this is a local development environment
+        const isLocalDevelopment = transaction.workspace.rpcServer && 
+            (transaction.workspace.rpcServer.includes('localhost') || 
+             transaction.workspace.rpcServer.includes('127.0.0.1') ||
+             transaction.workspace.rpcServer.includes('0.0.0.0'));
+
+        if (transaction.workspace.public || isLocalDevelopment) {
             options.transaction.afterCommit(() => {
                 return enqueue('processTokenTransfer',
                     `processTokenTransfer-${this.workspaceId}-${this.token}-${this.id}`, {

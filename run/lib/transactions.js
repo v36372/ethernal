@@ -73,7 +73,13 @@ const processTransactions = async (transactionIds) => {
 
         const workspace = await db.getWorkspaceByName(userId, workspaceName);
 
-        if (!workspace.public)
+        // Allow processing for private workspaces if they're using localhost RPC (for local development)
+        const isLocalDevelopment = workspace.rpcServer && 
+            (workspace.rpcServer.includes('localhost') || 
+             workspace.rpcServer.includes('127.0.0.1') ||
+             workspace.rpcServer.includes('0.0.0.0'));
+
+        if (!workspace.public && !isLocalDevelopment)
             continue;
 
         if (transaction.tokenTransfers) {

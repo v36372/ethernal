@@ -27,8 +27,14 @@ module.exports = async job => {
     if (!tokenTransfer)
         return 'Cannot find token transfer';
 
-    if (!tokenTransfer.workspace.public)
-        return 'Not processing private workspaces';
+    // Allow processing for private workspaces if they're using localhost RPC (for local development)
+    const isLocalDevelopment = tokenTransfer.workspace.rpcServer && 
+        (tokenTransfer.workspace.rpcServer.includes('localhost') || 
+         tokenTransfer.workspace.rpcServer.includes('127.0.0.1') ||
+         tokenTransfer.workspace.rpcServer.includes('0.0.0.0'));
+
+    if (!tokenTransfer.workspace.public && !isLocalDevelopment)
+        return 'Not processing private workspaces (unless local development)';
 
     if (!tokenTransfer.transaction)
         return 'Could not find transaction';
