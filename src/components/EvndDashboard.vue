@@ -51,9 +51,58 @@
                                             <h3 class="text-h6 font-weight-bold">System Metrics</h3>
                                         </div>
                                         <div v-if="dashboardData?.systemMetrics" class="metrics-list">
+                                            <!-- Total e-VND Supply with blockchain fetching -->
+                                            <div class="metric-row mb-3">
+                                                <div class="d-flex justify-space-between align-center">
+                                                    <span class="metric-label">{{ displayTotalSupply.label }}:</span>
+                                                    <div class="d-flex align-center">
+                                                        <span class="metric-value font-weight-bold" :class="{ 'blockchain-value': displayTotalSupply.source === 'blockchain' }">
+                                                            {{ displayTotalSupply.value }}
+                                                        </span>
+                                                        <v-progress-circular 
+                                                            v-if="fetchingSupply" 
+                                                            indeterminate 
+                                                            size="16" 
+                                                            width="2" 
+                                                            color="primary" 
+                                                            class="ml-2"
+                                                        ></v-progress-circular>
+                                                        <v-tooltip v-if="displayTotalSupply.source === 'blockchain'" location="top">
+                                                            <template v-slot:activator="{ props }">
+                                                                <v-icon v-bind="props" size="small" color="success" class="ml-2">mdi-check-circle</v-icon>
+                                                            </template>
+                                                            <span>Live data from blockchain</span>
+                                                        </v-tooltip>
+                                                        <v-tooltip v-else-if="displayTotalSupply.source === 'api'" location="top">
+                                                            <template v-slot:activator="{ props }">
+                                                                <v-icon v-bind="props" size="small" color="warning" class="ml-2">mdi-database</v-icon>
+                                                            </template>
+                                                            <span>Cached data from database</span>
+                                                        </v-tooltip>
+                                                        <v-btn 
+                                                            v-if="dashboardData?.systemComponents?.evnd_token?.fullAddress && currentWorkspaceStore.rpcServer"
+                                                            icon="mdi-refresh" 
+                                                            size="x-small" 
+                                                            variant="text" 
+                                                            color="primary"
+                                                            :loading="fetchingSupply"
+                                                            @click="fetchTotalSupplyFromBlockchain"
+                                                            class="ml-1"
+                                                        >
+                                                            <v-icon size="small">mdi-refresh</v-icon>
+                                                            <v-tooltip activator="parent" location="top">
+                                                                Refresh from blockchain
+                                                            </v-tooltip>
+                                                        </v-btn>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Other metrics -->
                                             <div
                                                 v-for="(metric, key) in dashboardData.systemMetrics"
                                                 :key="key"
+                                                v-show="key !== 'totalEvndSupply'"
                                                 class="metric-row mb-3"
                                             >
                                                 <div class="d-flex justify-space-between align-center">
@@ -196,18 +245,89 @@
 </template>
 
 <script setup>
-import { ref, onMounted, inject } from 'vue';
+import { ref, onMounted, inject, computed } from 'vue';
 import { useRouter } from 'vue-router';
+import { useCurrentWorkspaceStore } from '@/stores/currentWorkspace';
+import { ContractConnector } from '@/lib/rpc';
 
 const $server = inject('$server');
+const $fromWei = inject('$fromWei');
 const router = useRouter();
+const currentWorkspaceStore = useCurrentWorkspaceStore();
 
 // Reactive data
 const dashboardData = ref(null);
 const loading = ref(true);
 const error = ref(null);
+const blockchainTotalSupply = ref(null);
+const fetchingSupply = ref(false);
+
+// Computed properties
+const displayTotalSupply = computed(() => {
+    if (blockchainTotalSupply.value !== null) {
+        // Use blockchain value if available
+        return {
+            label: 'Total e-VND Supply',
+            value: `${blockchainTotalSupply.value.toLocaleString()} VND`,
+            rawValue: blockchainTotalSupply.value,
+            source: 'blockchain'
+        };
+    } else if (dashboardData.value?.systemMetrics?.totalEvndSupply) {
+        // Fall back to API value
+        return {
+            ...dashboardData.value.systemMetrics.totalEvndSupply,
+            source: 'api'
+        };
+    }
+    return {
+        label: 'Total e-VND Supply',
+        value: 'Loading...',
+        rawValue: 0,
+        source: 'loading'
+    };
+});
 
 // Methods
+const fetchTotalSupplyFromBlockchain = async () => {
+    if (!dashboardData.value?.systemComponents?.evnd_token?.fullAddress || !currentWorkspaceStore.rpcServer) {
+        console.warn('No eVND token contract address or RPC server available');
+        return;
+    }
+
+    try {
+        fetchingSupply.value = true;
+        const tokenAddress = dashboardData.value.systemComponents.evnd_token.fullAddress;
+        
+        // Create contract connector with minimal ERC20 ABI for totalSupply
+        const erc20Abi = [
+            {
+                "constant": true,
+                "inputs": [],
+                "name": "totalSupply",
+                "outputs": [{"name": "", "type": "uint256"}],
+                "type": "function"
+            }
+        ];
+        
+        const contract = new ContractConnector(currentWorkspaceStore.rpcServer, tokenAddress, erc20Abi);
+        const totalSupplyResult = await contract.totalSupply();
+        
+        if (totalSupplyResult) {
+            // Convert from wei to readable format (assuming 18 decimals for eVND)
+            const totalSupplyBigInt = BigInt(totalSupplyResult);
+            const totalSupplyNumber = Number(totalSupplyBigInt / BigInt(10**18));
+            blockchainTotalSupply.value = totalSupplyNumber;
+            
+            console.log('✅ Fetched total supply from blockchain:', totalSupplyNumber);
+        }
+    } catch (err) {
+        console.warn('Failed to fetch total supply from blockchain:', err.message);
+        // Keep blockchainTotalSupply as null to fall back to API value
+    } finally {
+        fetchingSupply.value = false;
+    }
+};
+
 const fetchDashboardData = async () => {
     try {
         loading.value = true;
@@ -215,6 +335,9 @@ const fetchDashboardData = async () => {
         
         const response = await $server.getEvndDashboard();
         dashboardData.value = response.data;
+        
+        // After getting dashboard data, try to fetch total supply from blockchain
+        await fetchTotalSupplyFromBlockchain();
     } catch (err) {
         console.error('Error fetching eVND dashboard data:', err);
         error.value = 'Failed to load dashboard data. Please try again later.';
@@ -340,6 +463,11 @@ onMounted(() => {
 
 .metric-value {
     color: #ffffff;
+}
+
+.blockchain-value {
+    color: #4caf50 !important;
+    text-shadow: 0 0 4px rgba(76, 175, 80, 0.3);
 }
 
 /* Verifier Section Styles */

@@ -103,7 +103,7 @@ import HashLink from './HashLink.vue';
 import VerificationBadge from './VerificationBadge.vue';
 
 import { useCurrentWorkspaceStore } from '../stores/currentWorkspace';
-import { useSpecialToken } from '@/composables/useSpecialToken';
+import { useEvndToken } from '@/composables/useEvndToken';
 import { useVerification } from '@/composables/useVerification';
 
 const currentWorkspaceStore = useCurrentWorkspaceStore();
@@ -112,8 +112,8 @@ const dt = inject('$dt');
 const fromWei = inject('$fromWei');
 const server = inject('$server');
 
-// Special token composable
-const { hasSpecialToken, specialTokenAddress } = useSpecialToken();
+// eVND token composable
+const { hasEvndToken, evndTokenAddress } = useEvndToken();
 
 // Verification composable
 const { hasVerificationContract, isAddressVerified, verifyAddress } = useVerification();
@@ -167,7 +167,7 @@ const formattedEvndBalance = computed(() => {
 
 // Function to fetch eVND balance
 const fetchEvndBalance = async () => {
-    if (!hasSpecialToken.value || !props.address) return;
+    if (!hasEvndToken.value || !props.address) return;
     
     try {
         const response = await server.getTokenBalances(props.address, ['erc20']);
@@ -175,7 +175,7 @@ const fetchEvndBalance = async () => {
         
         // Find the eVND token balance
         const evndTokenBalance = balances.find(balance => 
-            balance.token.toLowerCase() === specialTokenAddress.value
+            balance.token.toLowerCase() === evndTokenAddress.value
         );
         
         if (evndTokenBalance) {
@@ -217,7 +217,7 @@ watch(() => props.address, () => {
 
 // Fetch on mount
 onMounted(() => {
-    if (hasSpecialToken.value) {
+    if (hasEvndToken.value) {
         fetchEvndBalance();
     }
     if (hasVerificationContract.value) {
