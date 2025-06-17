@@ -80,7 +80,7 @@ module.exports = async job => {
     if (workspace.rpcHealthCheck && workspace.rpcHealthCheckEnabled && !workspace.rpcHealthCheck.isReachable)
         return 'RPC is unreachable';
 
-    if (!workspace.explorer.stripeSubscription)
+    if (!workspace.explorer.stripeSubscription && !isLocalDevelopment)
         return 'No active subscription';
 
     let limiter;

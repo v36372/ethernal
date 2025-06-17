@@ -35,7 +35,7 @@ module.exports = async job => {
     if (transaction.workspace.rpcHealthCheckEnabled && transaction.workspace.rpcHealthCheck && !transaction.workspace.rpcHealthCheck.isReachable)
         return 'RPC is not reachable';
 
-    if (!transaction.workspace.explorer.stripeSubscription)
+    if (!transaction.workspace.explorer.stripeSubscription && !isLocalDevelopment)
         return 'No active subscription';
 
     if (transaction.receipt.status != 0)

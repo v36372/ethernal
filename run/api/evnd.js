@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const workspaceAuthMiddleware = require('../middlewares/workspaceAuth');
 const { EvndContract, EvndSystemMetrics, Transaction, sequelize } = require('../models');
-const { ProviderConnector } = require('../lib/rpc');
+const { ProviderConnector, ContractConnector } = require('../lib/rpc');
 const { enqueue } = require('../lib/queue');
 
 /**
@@ -208,15 +208,11 @@ router.get('/dashboard', workspaceAuthMiddleware, async (req, res, next) => {
         
         if (evndTokenContract && workspace.rpcServer) {
             try {
-                const provider = new ProviderConnector(workspace.rpcServer);
-                // Call totalSupply() function - method selector: 0x18160ddd
-                const result = await provider.call({
-                    to: evndTokenContract.address,
-                    data: '0x18160ddd'
-                });
+                const contractConnector = new ContractConnector(workspace.rpcServer, evndTokenContract.address, []);
+                const result = await contractConnector.totalSupply();
                 
-                if (result && result !== '0x') {
-                    totalSupply = parseInt(result, 16);
+                if (result && result.toString() !== '0') {
+                    totalSupply = parseInt(result.toString());
                     // Update the database with the latest supply
                     await systemMetrics.update({ totalEvndSupply: totalSupply });
                 }
