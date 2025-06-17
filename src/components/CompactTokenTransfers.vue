@@ -8,7 +8,7 @@
         class="embedded-transfer-item py-2 px-0 rounded-sm"
         :class="{
           'border-bottom': index < displayedTransfers.length - 1,
-          'special-token-transfer': isSpecialTokenTransfer(transfer)
+          'evnd-token-transfer': isEvndTokenTransfer(transfer)
         }"
       >
         <div class="d-flex align-center">
@@ -44,7 +44,7 @@
             
             <span class="mx-1">
               <v-icon 
-                v-if="isSpecialTokenTransfer(transfer)" 
+                v-if="isEvndTokenTransfer(transfer)" 
                 color="amber" 
                 size="small" 
                 class="mr-1"
@@ -74,7 +74,7 @@
                 />)
               </template>
               <v-chip 
-                v-if="isSpecialTokenTransfer(transfer)" 
+                v-if="isEvndTokenTransfer(transfer)" 
                 color="amber" 
                 size="x-small" 
                 variant="flat"
@@ -126,7 +126,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
 import HashLink from './HashLink.vue';
-import { useSpecialToken } from '@/composables/useSpecialToken';
+import { useEvndToken } from '@/composables/useEvndToken';
 
 const props = defineProps({
   transfers: Array,
@@ -147,8 +147,8 @@ const props = defineProps({
 
 const emit = defineEmits(['view-all', 'refresh', 'pagination', 'update:options']);
 
-// Special token composable
-const { isSpecialTokenTransfer } = useSpecialToken();
+// eVND token composable
+const { isEvndTokenTransfer } = useEvndToken();
 
 // Reactive state
 const unformatted = ref(false);
@@ -280,7 +280,7 @@ onMounted(() => {
   align-items: center;
 }
 
-.special-token-transfer {
+.evnd-token-transfer {
   background: linear-gradient(90deg, rgba(255, 193, 7, 0.08) 0%, rgba(255, 193, 7, 0.03) 100%) !important;
   border-left: 3px solid #FFC107 !important;
   border-radius: 4px !important;

@@ -44,4 +44,4 @@ DOCKER_BUILDKIT=1 docker buildx build \
 echo "All production images built & pushed successfully:"
 echo "  ethernal-frontend:$TAG (linux/arm64)"
 echo "  ethernal-backend:$TAG (linux/arm64)"
-echo "  ethernal-pm2:$TAG (linux/arm64)" 
+echo "  ethernal-pm2:$TAG (linux/arm64)"

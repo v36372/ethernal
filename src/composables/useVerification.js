@@ -1,6 +1,6 @@
 import { ref, computed, inject } from 'vue';
 import { useCurrentWorkspaceStore } from '@/stores/currentWorkspace';
-import { useEnvStore } from '@/stores/env';
+import { useEvndContracts } from './useEvndContracts';
 
 // ABI for the verification contract
 const VERIFICATION_ABI = [
@@ -27,7 +27,7 @@ const VERIFICATION_ABI = [
 
 export function useVerification() {
     const currentWorkspaceStore = useCurrentWorkspaceStore();
-    const envStore = useEnvStore();
+    const { entityRegistryAddress, hasEntityRegistry } = useEvndContracts();
     
     // Get server instance - must be called at setup time
     const $server = inject('$server');
@@ -36,10 +36,9 @@ export function useVerification() {
     const verificationCache = ref(new Map());
     const pendingVerifications = ref(new Set());
     
-    // Configuration - this should be configurable via environment variables
+    // Configuration - use eVND entity registry from API
     const verificationContractAddress = computed(() => {
-        // Default to the address provided by user, make this configurable
-        return envStore.verificationContractAddress || '0x5FbDB2315678afecb367f032d93F642f64180aa3';
+        return entityRegistryAddress.value || null;
     });
     
     const hasVerificationContract = computed(() => {

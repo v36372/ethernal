@@ -54,7 +54,7 @@
         />
 
         <BaseChipGroup v-model="activeTab" mandatory>
-            <v-chip label size="small" value="evndtxns" v-if="hasSpecialToken">
+            <v-chip label size="small" value="evndtxns" v-if="hasEvndToken">
                 <v-icon class="mr-1" color="amber">mdi-star</v-icon>
                 eVND Transfers
             </v-chip>
@@ -151,7 +151,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, onBeforeUnmount, inject } from 'vue';
 import { useCurrentWorkspaceStore } from '../stores/currentWorkspace';
-import { useSpecialToken } from '@/composables/useSpecialToken';
+import { useEvndToken } from '@/composables/useEvndToken';
 
 import { formatNumber } from '../lib/utils';
 
@@ -176,7 +176,7 @@ const server = inject('$server');
 const currentWorkspaceStore = useCurrentWorkspaceStore();
 
 // Special token composable
-const { hasSpecialToken } = useSpecialToken();
+const { hasEvndToken } = useEvndToken();
 
 // Reactive state
 const balance = ref(0);
@@ -185,7 +185,7 @@ const loadingContract = ref(true);
 const loadingStats = ref(true);
 const contract = ref(null);
 const addressTransactionStats = ref({});
-const activeTab = ref(hasSpecialToken.value ? 'evndtxns' : 'transactions');
+const activeTab = ref(hasEvndToken.value ? 'evndtxns' : 'transactions');
 
 const totalTransactions = computed(() => {
     if (!addressTransactionStats.value.sent && !addressTransactionStats.value.received) return 0;
@@ -219,7 +219,7 @@ const updateTabFromHash = () => {
         activeTab.value = hash;
     } else {
         // Default to eVND transfers if available, otherwise transactions
-        activeTab.value = hasSpecialToken.value ? 'evndtxns' : 'transactions';
+        activeTab.value = hasEvndToken.value ? 'evndtxns' : 'transactions';
     }
 };
 

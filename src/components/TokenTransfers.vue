@@ -124,7 +124,7 @@
             <div class="d-flex flex-column token-cell" v-if="isERC20(item)">
                 <div class="d-flex align-center">
                                         <v-icon 
-                        v-if="isSpecialTokenTransfer(item)" 
+                        v-if="isEvndTokenTransfer(item)" 
                         color="amber" 
                         size="small" 
                         class="mr-2"
@@ -142,7 +142,7 @@
                         :contract="item.contract"
                     />
                                         <v-chip 
-                        v-if="isSpecialTokenTransfer(item)" 
+                        v-if="isEvndTokenTransfer(item)" 
                         color="amber" 
                         size="x-small" 
                         variant="flat"
@@ -248,7 +248,7 @@
 import { ref, computed, watch, inject } from 'vue';
 import { formatContractPattern } from '@/lib/utils';
 import HashLink from './HashLink.vue';
-import { useSpecialToken } from '@/composables/useSpecialToken';
+import { useEvndToken } from '@/composables/useEvndToken';
 
 // Component props
 const props = defineProps({
@@ -302,8 +302,8 @@ const tokenMetadata = ref({});
 
 const $server = inject('$server');
 
-// Special token composable
-const { isSpecialTokenTransfer, getSpecialTokenHighlightClasses } = useSpecialToken();
+// eVND token composable
+const { isEvndTokenTransfer, getEvndTokenHighlightClasses } = useEvndToken();
 
 // Component emits
 const emit = defineEmits(['update:options']);
@@ -342,8 +342,8 @@ const getImageTag = (image) => {
 };
 
 const getRowProps = (item) => {
-    if (isSpecialTokenTransfer(item.item)) {
-        return { class: getSpecialTokenHighlightClasses() };
+    if (isEvndTokenTransfer(item.item)) {
+        return { class: getEvndTokenHighlightClasses() };
     }
     return {};
 };
@@ -413,12 +413,12 @@ watch(() => props.transfers, (newVal) => {
     left: 0;
 }
 
-:deep(.special-token-highlight) {
+:deep(.evnd-token-highlight) {
     background: linear-gradient(90deg, rgba(255, 193, 7, 0.1) 0%, rgba(255, 193, 7, 0.05) 100%) !important;
     border-left: 4px solid #FFC107 !important;
 }
 
-:deep(.special-token-highlight):hover {
+:deep(.evnd-token-highlight):hover {
     background: linear-gradient(90deg, rgba(255, 193, 7, 0.15) 0%, rgba(255, 193, 7, 0.08) 100%) !important;
 }
 

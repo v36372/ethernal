@@ -10,7 +10,7 @@
       <template v-slot:item.token="{ item }">
         <div class="d-flex align-center">
           <v-icon 
-            v-if="isSpecialTokenBalance(item)" 
+            v-if="isEvndTokenBalance(item)" 
             color="amber" 
             size="small" 
             class="mr-2"
@@ -29,11 +29,11 @@
       
       <template v-slot:item.amount="{ item }">
         <div class="d-flex align-center">
-          <span v-tooltip="item.currentBalance" :class="{ 'special-token-balance': isSpecialTokenBalance(item) }">
+          <span v-tooltip="item.currentBalance" :class="{ 'evnd-token-balance': isEvndTokenBalance(item) }">
             {{ fromWei(item.currentBalance, item.tokenContract.tokenDecimals, item.tokenContract.tokenSymbol) }}
           </span>
           <v-chip 
-            v-if="isSpecialTokenBalance(item)" 
+            v-if="isEvndTokenBalance(item)" 
             color="amber" 
             size="x-small" 
             variant="flat"
@@ -56,7 +56,7 @@
 <script setup>
 import { ref, onMounted, inject } from 'vue';
 import HashLink from './HashLink.vue';
-import { useSpecialToken } from '@/composables/useSpecialToken';
+import { useEvndToken } from '@/composables/useEvndToken';
 
 // Props
 const props = defineProps({
@@ -70,8 +70,8 @@ const props = defineProps({
 const server = inject('$server');
 const fromWei = inject('$fromWei');
 
-// Special token composable
-const { isSpecialTokenBalance, getSpecialTokenHighlightClasses } = useSpecialToken();
+// eVND token composable
+const { isEvndTokenBalance, getEvndTokenHighlightClasses } = useEvndToken();
 
 // Reactive state
 const loading = ref(true);
@@ -91,8 +91,8 @@ const fetchTokens = () => {
 };
 
 const getRowProps = (item) => {
-    if (isSpecialTokenBalance(item.item)) {
-        return { class: getSpecialTokenHighlightClasses() };
+    if (isEvndTokenBalance(item.item)) {
+        return { class: getEvndTokenHighlightClasses() };
     }
     return {};
 };
@@ -104,14 +104,14 @@ onMounted(() => {
 </script>
 
 <style scoped>
-:deep(.special-token-highlight) {
+:deep(.evnd-token-highlight) {
     background: linear-gradient(90deg, rgba(255, 193, 7, 0.1) 0%, rgba(255, 193, 7, 0.05) 100%) !important;
     border-left: 4px solid #FFC107 !important;
 }
-:deep(.special-token-highlight):hover {
+:deep(.evnd-token-highlight):hover {
     background: linear-gradient(90deg, rgba(255, 193, 7, 0.15) 0%, rgba(255, 193, 7, 0.08) 100%) !important;
 }
-.special-token-balance {
+.evnd-token-balance {
     font-weight: 600;
     color: #F57C00;
 }

@@ -14,32 +14,32 @@
             </template>
             <template v-slot:item.token="{ item }">
                 <div class="d-flex align-center">
-                    <v-icon 
-                        v-if="isSpecialTokenBalance(item)" 
-                        color="amber" 
-                        size="small" 
-                        class="mr-2"
-                        v-tooltip="'eVND'"
-                    >
-                        mdi-star
-                    </v-icon>
+                              <v-icon 
+            v-if="isEvndTokenBalance(item)" 
+            color="amber" 
+            size="small" 
+            class="mr-2"
+            v-tooltip="'eVND'"
+          >
+            mdi-star
+          </v-icon>
                     <Hash-Link :type="'address'" :hash="item.token" :withName="true" :withTokenName="true" :contract="item.tokenContract" />
                 </div>
             </template>
             <template v-slot:item.currentBalance="{ item }">
                 <div class="d-flex align-center">
-                    <span :class="{ 'special-token-balance': isSpecialTokenBalance(item) }">
-                        {{ $fromWei(item.currentBalance, item.tokenContract && item.tokenContract.tokenDecimals, item.tokenContract && item.tokenContract.tokenSymbol, unformatted) }}
-                    </span>
-                    <v-chip 
-                        v-if="isSpecialTokenBalance(item)" 
-                        color="amber" 
-                        size="x-small" 
-                        variant="flat"
-                        class="ml-2"
-                    >
-                        eVND
-                    </v-chip>
+                              <span :class="{ 'evnd-token-balance': isEvndTokenBalance(item) }">
+            {{ $fromWei(item.currentBalance, item.tokenContract && item.tokenContract.tokenDecimals, item.tokenContract && item.tokenContract.tokenSymbol, unformatted) }}
+          </span>
+          <v-chip 
+            v-if="isEvndTokenBalance(item)" 
+            color="amber" 
+            size="x-small" 
+            variant="flat"
+            class="ml-2"
+          >
+            eVND
+          </v-chip>
                 </div>
             </template>
             </v-data-table>
@@ -48,7 +48,7 @@
 </template>
 <script>
 import HashLink from './HashLink.vue';
-import { useSpecialToken } from '@/composables/useSpecialToken';
+import { useEvndToken } from '@/composables/useEvndToken';
 
 export default {
     name: 'TokenBalances',
@@ -57,17 +57,17 @@ export default {
         HashLink
     },
     setup() {
-        const { isSpecialTokenBalance, getSpecialTokenHighlightClasses } = useSpecialToken();
+        const { isEvndTokenBalance, getEvndTokenHighlightClasses } = useEvndToken();
         
         const getRowProps = (item) => {
-            if (isSpecialTokenBalance(item.item)) {
-                return { class: getSpecialTokenHighlightClasses() };
+            if (isEvndTokenBalance(item.item)) {
+                return { class: getEvndTokenHighlightClasses() };
             }
             return {};
         };
         
         return {
-            isSpecialTokenBalance,
+            isEvndTokenBalance,
             getRowProps
         };
     },
@@ -104,14 +104,14 @@ export default {
 </script>
 
 <style scoped>
-:deep(.special-token-highlight) {
+:deep(.evnd-token-highlight) {
     background: linear-gradient(90deg, rgba(255, 193, 7, 0.1) 0%, rgba(255, 193, 7, 0.05) 100%) !important;
     border-left: 4px solid #FFC107 !important;
 }
-:deep(.special-token-highlight):hover {
+:deep(.evnd-token-highlight):hover {
     background: linear-gradient(90deg, rgba(255, 193, 7, 0.15) 0%, rgba(255, 193, 7, 0.08) 100%) !important;
 }
-.special-token-balance {
+.evnd-token-balance {
     font-weight: 600;
     color: #F57C00;
 }

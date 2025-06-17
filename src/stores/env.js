@@ -18,8 +18,7 @@ export const useEnvStore = defineStore('env', {
         apiRoot: '',
         maxV2DexPairsForTrial: 20,
         nativeTokenAddress: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-        specialTokenAddress: import.meta.env.VITE_SPECIAL_TOKEN_ADDRESS?.toLowerCase() || '0xdc64a140aa3e981100a9beca4e685f962f0cf6c9',
-        verificationContractAddress: import.meta.env.VITE_VERIFICATION_CONTRACT_ADDRESS || '0x5FbDB2315678afecb367f032d93F642f64180aa3',
+
         verifierAddress1: import.meta.env.VITE_VERIFIER_ADDRESS_1 || '0x7099B1E00D8b9aaEc2A87AaE0b1eA9Be79C8',
         verifierAddress2: import.meta.env.VITE_VERIFIER_ADDRESS_2 || '0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC',
         chains: {
@@ -72,12 +71,6 @@ export const useEnvStore = defineStore('env', {
             return window.location.host === state.mainDomain;
         },
 
-        hasSpecialToken: (state) => {
-            return !!state.specialTokenAddress;
-        },
 
-        hasVerificationContract: (state) => {
-            return !!state.verificationContractAddress;
-        }
     }
 });

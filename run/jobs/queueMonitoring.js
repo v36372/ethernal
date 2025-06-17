@@ -22,6 +22,7 @@ module.exports = async () => {
         const queue = new Queue(queueName, { connection });
         const completedJobs = await queue.getCompleted();
         const latestJob = completedJobs[0];
+        console.log(`Latest job for ${queueName} queue:`, latestJob);
 
         if (latestJob && latestJob.timestamp < Date.now() - maxTimeWithoutEnqueuedJob() * 1000) {
             await createIncident(`${queueName} queue issue (no jobs enqueued)`, `Latest job timestamp: ${new Date(latestJob.timestamp).toISOString()}`);

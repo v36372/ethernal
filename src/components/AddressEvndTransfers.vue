@@ -1,5 +1,5 @@
 <template>
-    <div v-if="hasSpecialToken">
+    <div v-if="hasEvndToken">
         <v-data-table
             class="hide-table-count"
             :loading="loading"
@@ -107,7 +107,7 @@
             </template>
 
             <template v-slot:item.amount="{ item }">
-                <span class="font-weight-bold text-amber" v-if="isSpecialTokenTransfer(item)">
+                <span class="font-weight-bold text-amber" v-if="isEvndTokenTransfer(item)">
                     {{ $fromWei(item.amount, item.contract.tokenDecimals || 18, item.contract.tokenSymbol || 'eVND') }}
                 </span>
             </template>
@@ -150,7 +150,7 @@
     <div v-else class="text-center py-8">
         <v-icon size="48" color="grey-lighten-1">mdi-information-outline</v-icon>
         <p class="text-h6 text-grey-lighten-1 mt-2">No eVND token configured</p>
-        <p class="text-body-2 text-grey-lighten-1">Configure VITE_SPECIAL_TOKEN_ADDRESS to show eVND transfers</p>
+        <p class="text-body-2 text-grey-lighten-1">Configure eVND contracts via API to show eVND transfers</p>
     </div>
 </template>
 
@@ -158,7 +158,7 @@
 import { ref, inject, onMounted } from 'vue';
 import HashLink from './HashLink.vue';
 import VerificationBadge from './VerificationBadge.vue';
-import { useSpecialToken } from '@/composables/useSpecialToken';
+import { useEvndToken } from '@/composables/useEvndToken';
 
 // Props
 const props = defineProps({
@@ -171,8 +171,8 @@ const props = defineProps({
 // Inject server instance
 const $server = inject('$server');
 
-// Special token composable
-const { hasSpecialToken, isSpecialTokenTransfer, getSpecialTokenHighlightClasses } = useSpecialToken();
+// eVND token composable
+const { hasEvndToken, isEvndTokenTransfer, getEvndTokenHighlightClasses, evndTokenAddress } = useEvndToken();
 
 // Reactive state
 const loading = ref(true);
@@ -193,11 +193,12 @@ const headers = [
 
 // Methods
 const getRowProps = (item) => {
-    return { class: getSpecialTokenHighlightClasses() };
+    return { class: getEvndTokenHighlightClasses() };
 };
 
 const getEvndTransfers = () => {
-    if (!hasSpecialToken.value) {
+    // Check if we have eVND token configured via API
+    if (!hasEvndToken.value) {
         loading.value = false;
         return;
     }
@@ -216,9 +217,13 @@ const getEvndTransfers = () => {
         console.log('Fetched transfers:', data.items.length);
         // Filter for eVND transfers only
         const evndTransfers = data.items.filter(transfer => {
-            const isEvnd = isSpecialTokenTransfer(transfer);
+            const isEvnd = isEvndTokenTransfer(transfer);
+            
             if (isEvnd) {
-                console.log('Found eVND transfer:', transfer);
+                console.log('Found eVND transfer:', transfer, {
+                    tokenAddress: transfer.token,
+                    evndAddress: evndTokenAddress.value
+                });
             }
             return isEvnd;
         });
@@ -235,7 +240,7 @@ const getEvndTransfers = () => {
 
 // Initialize data on mount
 onMounted(() => {
-    if (hasSpecialToken.value) {
+    if (hasEvndToken.value) {
         getEvndTransfers();
     } else {
         loading.value = false;
@@ -255,12 +260,12 @@ onMounted(() => {
     white-space: nowrap;
 }
 
-:deep(.special-token-highlight) {
+:deep(.evnd-token-highlight) {
     background: linear-gradient(90deg, rgba(255, 193, 7, 0.1) 0%, rgba(255, 193, 7, 0.05) 100%) !important;
     border-left: 4px solid #FFC107 !important;
 }
 
-:deep(.special-token-highlight):hover {
+:deep(.evnd-token-highlight):hover {
     background: linear-gradient(90deg, rgba(255, 193, 7, 0.15) 0%, rgba(255, 193, 7, 0.08) 100%) !important;
 }
 </style> 

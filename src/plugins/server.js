@@ -917,6 +917,13 @@ export default {
                 return axios.get(resource, { params });
             },
 
+            getEvndContracts() {
+                const params = { firebaseUserId: firebaseUserId.value, workspace: workspace.value, };
+
+                const resource = `${envStore.apiRoot}/api/evnd/contracts`;
+                return axios.get(resource, { params });
+            },
+
             resetPassword(token, password) {
                 const resource = `${envStore.apiRoot}/api/users/resetPassword`;
                 return axios.post(resource, { token, password });
