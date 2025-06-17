@@ -4,7 +4,8 @@
             <v-card-text>
                 <template v-if="envStore.isAdmin">
                     <v-alert class="mb-4" v-if="removedContract" density="compact" text type="success">Contract at address <b>{{ removedContract }}</b> has been successfully removed.</v-alert>
-                    <v-alert class="mb-4" density="compact" text v-show="!canImport" type="warning">Free plan users are limited to 10 synced contracts. Remove some contracts or <Upgrade-Link @goToBilling="goToBilling" :emit="true"><span class="text-white text-decoration-underline font-weight-bold">upgrade</span></Upgrade-Link> to the Premium plan for more.</v-alert>
+                    <!-- Remove contract limit warning - always allow contract imports -->
+                    <!-- <v-alert class="mb-4" density="compact" text v-show="!canImport" type="warning">Free plan users are limited to 10 synced contracts. Remove some contracts or <Upgrade-Link @goToBilling="goToBilling" :emit="true"><span class="text-white text-decoration-underline font-weight-bold">upgrade</span></Upgrade-Link> to the Premium plan for more.</v-alert> -->
                     <Import-Contract-Modal ref="importContractModal" />
                     <Remove-Contract-Confirmation-Modal @refresh="getContracts" ref="removeContractConfirmationModal" />
                 </template>
@@ -171,7 +172,8 @@ export default {
             useEnvStore
         ),
         canImport() {
-            return this.currentWorkspaceStore.public || this.contracts.length < 10 || this.userStore.plan != 'free';
+            // Always allow contract imports - remove all restrictions
+            return true;
         },
         removedContract() {
             return this.$route.query.removedContract ? this.$route.query.removedContract : null;

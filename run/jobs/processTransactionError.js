@@ -17,8 +17,9 @@ module.exports = async job => {
     if (!transaction.receipt)
         return 'Cannot find receipt';
 
-    if (!transaction.workspace.public)
-        return 'Not allowed on private workspaces';
+    // Always process transaction errors regardless of workspace public status
+    // if (!transaction.workspace.public)
+    //     return 'Not allowed on private workspaces';
 
     if (!transaction.workspace.explorer)
         return 'Inactive explorer';

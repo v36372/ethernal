@@ -2401,15 +2401,8 @@ module.exports = (sequelize, DataTypes) => {
     }
 
     async canCreateContract() {
-        if (this.public)
-            return true;
-
-        const user = await this.getUser();
-        if (user.isPremium)
-            return true;
-
-        const contractCount = await this.countContracts();
-        return contractCount < 10;
+        // Always allow contract creation - remove all restrictions
+        return true;
     }
 
     async safeCreatePartialBlock(block) {
@@ -2721,6 +2714,8 @@ module.exports = (sequelize, DataTypes) => {
     }
 
     async safeCreateOrUpdateContract(contract, transaction) {
+        console.log(`[DEBUG] safeCreateOrUpdateContract - Processing contract ${contract.address} in workspace ${this.id}`);
+        
         const contracts = await this.getContracts({ where: { address: contract.address.toLowerCase() }});
         const existingContract = contracts[0];
 
@@ -2746,9 +2741,15 @@ module.exports = (sequelize, DataTypes) => {
             asm: contract.asm
         });
 
-        if (existingContract)
-            return existingContract.update(newContract, { transaction })
-        else {
+        console.log(`[DEBUG] safeCreateOrUpdateContract - Sanitized contract data:`, JSON.stringify(newContract, null, 2));
+
+        if (existingContract) {
+            console.log(`[DEBUG] safeCreateOrUpdateContract - Updating existing contract ${contract.address}`);
+            const result = await existingContract.update(newContract, { transaction });
+            console.log(`[DEBUG] safeCreateOrUpdateContract - Successfully updated contract ${contract.address}`);
+            return result;
+        } else {
+            console.log(`[DEBUG] safeCreateOrUpdateContract - Creating new contract ${contract.address}`);
             const [_contract] = await sequelize.models.Contract.bulkCreate(
                 [
                     {
@@ -2764,6 +2765,7 @@ module.exports = (sequelize, DataTypes) => {
                     transaction
                 }
             );
+            console.log(`[DEBUG] safeCreateOrUpdateContract - Successfully created contract ${contract.address}`);
             return _contract;
         }
     }

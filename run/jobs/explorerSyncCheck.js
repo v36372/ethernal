@@ -9,6 +9,8 @@ module.exports = async () => {
         data: { explorerSlug: e.slug }
     }));
 
+    console.log(`Enqueuing ${jobs.length} jobs to update explorer syncing process...`);
+
     await bulkEnqueue('updateExplorerSyncingProcess', jobs);
 
     return true;

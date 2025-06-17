@@ -119,27 +119,29 @@ module.exports = (sequelize, DataTypes) => {
             ]
         });
 
-        if (transaction.workspace.public) {
-            options.transaction.afterCommit(() => {
-                return enqueue('processTokenTransfer',
-                    `processTokenTransfer-${this.workspaceId}-${this.token}-${this.id}`, {
-                        tokenTransferId: this.id
-                    }
-                );
-            });
 
-            if (this.tokenId)
-                await enqueue('reloadErc721Token',
-                    `reloadErc721Token-${this.workspaceId}-${this.token}-${this.tokenId}`, {
-                        workspaceId: this.workspaceId,
-                        address: this.token,
-                        tokenId: this.tokenId
-                    }
-                );
-        }
+        console.log(`[DEBUG] TokenTransfer afterCreate: ${this.id} - ${this.token} - ${this.amount} - ${transaction.blockNumber} - ${transaction.hash}`);
 
-        if (!transaction.workspace.public)
-            trigger(`private-processableTransactions;workspace=${transaction.workspace.id}`, 'new', transaction.toJSON());
+        // Always process token transfers regardless of workspace public status
+        options.transaction.afterCommit(() => {
+            return enqueue('processTokenTransfer',
+                `processTokenTransfer-${this.workspaceId}-${this.token}-${this.id}`, {
+                    tokenTransferId: this.id
+                }
+            );
+        });
+
+        if (this.tokenId)
+            await enqueue('reloadErc721Token',
+                `reloadErc721Token-${this.workspaceId}-${this.token}-${this.tokenId}`, {
+                    workspaceId: this.workspaceId,
+                    address: this.token,
+                    tokenId: this.tokenId
+                }
+            );
+
+        // Always trigger processable transactions regardless of workspace public status
+        trigger(`private-processableTransactions;workspace=${transaction.workspace.id}`, 'new', transaction.toJSON());
     }
   }
   TokenTransfer.init({

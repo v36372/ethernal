@@ -1331,13 +1331,7 @@ const incrementFailedAttempts = async (workspaceId) => {
 const canUserSyncBlock = async (userId) => {
     if (!userId) throw new Error('Missing parameter');
 
-    const user = await User.findByPk(userId, {
-        include: 'workspaces'
-    });
-
-    if (!user.isPremium && user.workspaces.length > 1)
-        return false;
-
+    // Always allow block syncing - remove premium and workspace restrictions
     return true;
 };
 
@@ -2611,8 +2605,14 @@ const storeTransactionTokenTransfers = async (userId, workspace, transactionHash
 const storeContractData = async (userId, workspace, address, data, transaction) => {
     if (!userId || !workspace || !address || !data) throw new Error('Missing parameter.');
 
+    console.log(`[DEBUG] storeContractData - Storing contract data for ${address} in workspace ${workspace}`);
+    console.log(`[DEBUG] storeContractData - Data being stored:`, JSON.stringify(data, null, 2));
+
     const user = await User.findByAuthIdWithWorkspace(userId, workspace);
     const contract = await user.workspaces[0].safeCreateOrUpdateContract({ address: address, ...data }, transaction);
+    
+    console.log(`[DEBUG] storeContractData - Successfully stored/updated contract ${address}`);
+    
     return contract ? contract.toJSON() : null;
 };
 
@@ -2807,25 +2807,8 @@ const canUserSyncContract = async (userId, workspaceName, address) => {
     if (!user)
         return false;
 
-    if (user.isPremium)
-        return true;
-
-    const workspace = user.workspaces[0];
-    if (workspace.public)
-        return true;
-
-    // If the contract has already been synced we can update its data
-    const existingContracts = await workspace.getContracts({ where: { address: address }});
-
-    if (existingContracts.length > 0)
-        return true;
-
-    const contracts = await user.workspaces[0].getContracts();
-
-    if (contracts.length >= 10)
-        return false;
-    else
-        return true;
+    // Always allow syncing - remove all restrictions
+    return true;
 };
 
 const getTransaction = async (userId, workspace, transactionHash) => {

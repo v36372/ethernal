@@ -5,6 +5,10 @@ const MAX_BATCH_SIZE = 2000;
 
 const enqueue = (queueName, jobName, data, priority = 1, repeat, delay, unique) => {
     const jobId = unique ? jobName : null;
+    if (queues[queueName] == undefined) {
+        console.error(`Queue ${queueName} does not exist.`);
+        return;
+    }
     return queues[queueName].add(jobName, data, sanitize({ priority, repeat, jobId, delay }));
 };
 

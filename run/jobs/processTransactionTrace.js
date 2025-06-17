@@ -40,8 +40,9 @@ module.exports = async job => {
     if (!transaction)
         return 'Cannot find transaction';
 
-    if (!transaction.workspace.public)
-        return 'Not allowed on private workspaces';
+    // Always process transaction traces regardless of workspace public status
+    // if (!transaction.workspace.public)
+    //     return 'Not allowed on private workspaces';
 
     if (!transaction.workspace.explorer)
         return 'Inactive explorer';
@@ -54,6 +55,8 @@ module.exports = async job => {
 
     if (!transaction.workspace.explorer.stripeSubscription)
         return 'No active subscription';
+
+    console.log("[DEBUG] processTransactionTrace - Starting processing for transactionId:", data.transactionId);
 
     const tracer = new Tracer(transaction.workspace.rpcServer, db, transaction.workspace.tracing);
     await tracer.process(transaction);

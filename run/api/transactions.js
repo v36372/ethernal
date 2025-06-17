@@ -88,9 +88,10 @@ router.post('/', [authMiddleware, browserSyncMiddleware], async (req, res, next)
         const transaction = data.transaction;
         const receipt = data.transactionReceipt;
 
-        const canUserSyncBlock = await db.canUserSyncBlock(data.user.id);
-        if (!canUserSyncBlock)
-            return managedError(new Error(`You are on a free plan with more than one workspace. Please upgrade your plan, or delete your extra workspaces here: https://app.${getAppDomain()}/settings.`), req, res);
+        // Remove block sync restrictions - always allow block syncing
+        // const canUserSyncBlock = await db.canUserSyncBlock(data.user.id);
+        // if (!canUserSyncBlock)
+        //     return managedError(new Error(`You are on a free plan with more than one workspace. Please upgrade your plan, or delete your extra workspaces here: https://app.${getAppDomain()}/settings.`), req, res);
 
         const sTransactionReceipt = receipt ? stringifyBns(sanitize(receipt)) : null;
         const sTransaction = stringifyBns(sanitize(transaction));
@@ -166,21 +167,18 @@ router.post('/:hash/trace', authMiddleware, async (req, res, next) => {
         for (const step of data.steps) {
             if (['CALL', 'CALLCODE', 'DELEGATECALL', 'STATICCALL', 'CREATE', 'CREATE2'].indexOf(step.op.toUpperCase()) > -1) {
                 let contractRef;                
-                const canSync = await db.canUserSyncContract(data.uid, data.workspace, step.address);
+                // Remove canUserSyncContract check - always allow contract syncing in traces
+                const contractData = sanitize({
+                    address: step.address.toLowerCase(),
+                    hashedBytecode: step.contractHashedBytecode
+                });
 
-                if (canSync) {
-                    const contractData = sanitize({
-                        address: step.address.toLowerCase(),
-                        hashedBytecode: step.contractHashedBytecode
-                    });
-
-                    await db.storeContractData(
-                        data.uid,
-                        data.workspace,
-                        step.address,
-                        contractData
-                    );
-                }
+                await db.storeContractData(
+                    data.uid,
+                    data.workspace,
+                    step.address,
+                    contractData
+                );
 
                 trace.push(step);
             }

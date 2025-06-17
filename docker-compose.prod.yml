@@ -87,6 +87,12 @@ services:
     env_file: ./run/.env.prod
 
   high_priority_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    volumes:
+      - ./run:/app
+      #  - ./run/.env:/app/.env
     networks:
       - ethernal
     container_name: highPriority
@@ -94,11 +100,17 @@ services:
       - postgres
       - redis
     restart: always
-    image: antoinedc44/ethernal-backend:latest
+    #image: antoinedc44/ethernal-backend:latest
     command: node workers/highPriority.js
     env_file: ./run/.env.prod
 
   medium_priority_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    volumes:
+      - ./run:/app
+      #  - ./run/.env:/app/.env
     networks:
       - ethernal
     container_name: mediumPriority
@@ -106,11 +118,17 @@ services:
       - postgres
       - redis
     restart: always
-    image: antoinedc44/ethernal-backend:latest
+    #image: antoinedc44/ethernal-backend:latest
     command: node workers/mediumPriority.js
     env_file: ./run/.env.prod
 
   low_priority_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    volumes:
+      - ./run:/app
+      #  - ./run/.env:/app/.env
     networks:
       - ethernal
     container_name: lowPriority
@@ -118,7 +136,7 @@ services:
       - postgres
       - redis
     restart: always
-    image: antoinedc44/ethernal-backend:latest
+    #image: antoinedc44/ethernal-backend:latest
     command: node workers/lowPriority.js
     env_file: ./run/.env.prod
 
