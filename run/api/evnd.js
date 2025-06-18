@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const workspaceAuthMiddleware = require('../middlewares/workspaceAuth');
-const { EvndContract, EvndSystemMetrics } = require('../models');
+const { EvndContract, EvndSystemMetrics, Transaction, sequelize } = require('../models');
 const { ProviderConnector } = require('../lib/rpc');
+const { enqueue } = require('../lib/queue');
 
 /**
  * Get eVND contracts
@@ -158,6 +159,28 @@ router.get('/dashboard', workspaceAuthMiddleware, async (req, res, next) => {
                 complianceRules: 0,
                 usdToVndRate: 24000
             });
+        }
+
+        // Query actual daily eVND transactions from database
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        const dailyEvndTransactions = await Transaction.count({
+            where: {
+                workspaceId,
+                isEvndTransfer: true,
+                timestamp: {
+                    [sequelize.Sequelize.Op.gte]: today,
+                    [sequelize.Sequelize.Op.lt]: tomorrow
+                }
+            }
+        });
+
+        // Update the daily transactions count with real data
+        if (dailyEvndTransactions !== systemMetrics.dailyTransactions) {
+            await systemMetrics.update({ dailyTransactions: dailyEvndTransactions });
         }
 
         // Helper function to format address for display
@@ -684,6 +707,28 @@ router.get('/metrics', workspaceAuthMiddleware, async (req, res, next) => {
         });
     } catch(error) {
         console.error('Error fetching system metrics:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * Update eVND transfer flags for existing transactions
+ * POST /api/evnd/update-transfer-flags
+ */
+router.post('/update-transfer-flags', workspaceAuthMiddleware, async (req, res, next) => {
+    try {
+        const workspaceId = req.query.workspace.id;
+
+        await enqueue('updateEvndTransferFlags', `updateEvndTransferFlags-${workspaceId}`, {
+            workspaceId
+        });
+
+        res.status(200).json({
+            success: true,
+            message: 'eVND transfer flag update job queued successfully'
+        });
+    } catch(error) {
+        console.error('Error queuing eVND transfer flag update:', error);
         res.status(500).json({ error: error.message });
     }
 });

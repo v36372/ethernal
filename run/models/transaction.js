@@ -252,6 +252,25 @@ module.exports = (sequelize, DataTypes) => {
                 for (let i = 0; i < storedTokenTransfers.length; i++)
                     trigger(`private-contractLog;workspace=${this.workspaceId};contract=${tokenTransfers[i].address}`, 'new', null);
 
+                // Check if any token transfer involves eVND token
+                const evndContract = await sequelize.models.EvndContract.findOne({
+                    where: {
+                        workspaceId: this.workspaceId,
+                        contractType: 'evnd_token',
+                        isActive: true
+                    }
+                });
+
+                if (evndContract) {
+                    const hasEvndTransfer = tokenTransfers.some(transfer => 
+                        transfer.token && transfer.token.toLowerCase() === evndContract.address.toLowerCase()
+                    );
+
+                    if (hasEvndTransfer) {
+                        await this.update({ isEvndTransfer: true }, { transaction });
+                    }
+                }
+
                 const events = [];
                 for (let i = 0; i < storedTokenTransfers.length; i++) {
                     const tokenTransfer = storedTokenTransfers[i];
@@ -502,6 +521,11 @@ module.exports = (sequelize, DataTypes) => {
     },
     workspaceId: DataTypes.INTEGER,
     state: DataTypes.ENUM('syncing', 'ready'),
+    isEvndTransfer: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
+    },
     isReady: {
         type: DataTypes.VIRTUAL,
         get() {
