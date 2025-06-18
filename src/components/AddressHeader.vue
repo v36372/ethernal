@@ -194,6 +194,11 @@ const fetchEvndBalance = async () => {
 
 // Function to check verification
 const checkVerification = async () => {
+    console.log('🔍 AddressHeader.checkVerification called:', {
+        address: props.address,
+        hasVerificationContract: hasVerificationContract.value
+    });
+    
     if (!hasVerificationContract.value || !props.address) return;
     
     verificationLoading.value = true;
@@ -214,6 +219,14 @@ watch(() => props.address, () => {
     fetchEvndBalance();
     checkVerification();
 }, { immediate: true });
+
+// Watch for verification contract availability changes
+watch(() => hasVerificationContract.value, (hasContract) => {
+    console.log('🔄 AddressHeader: hasVerificationContract changed to:', hasContract);
+    if (hasContract && props.address) {
+        checkVerification();
+    }
+});
 
 // Fetch on mount
 onMounted(() => {

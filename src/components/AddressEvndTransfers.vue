@@ -155,7 +155,7 @@
 </template>
 
 <script setup>
-import { ref, inject, onMounted } from 'vue';
+import { ref, inject, onMounted, watch } from 'vue';
 import HashLink from './HashLink.vue';
 import VerificationBadge from './VerificationBadge.vue';
 import { useEvndToken } from '@/composables/useEvndToken';
@@ -217,11 +217,13 @@ const getEvndTransfers = () => {
         order: 'desc'
     })
     .then(({ data }) => {
-        console.log('✅ Fetched eVND transfers directly:', data.items.length);
+        console.log('✅ Full API response:', data);
+        console.log('✅ Extracted items:', data.items?.length || 0, data.items);
+        
         allEvndTransfers.value = data.items || [];
         
         // Log some details for debugging
-        if (data.items.length > 0) {
+        if (data.items && data.items.length > 0) {
             console.log('📊 Sample eVND transfer:', data.items[0]);
         } else {
             console.log('⚠️  No eVND transfers found using dedicated API');
@@ -236,12 +238,26 @@ const getEvndTransfers = () => {
 
 // Initialize data on mount
 onMounted(() => {
+    console.log('🚀 AddressEvndTransfers component mounted for address:', props.address);
+    console.log('🔍 hasEvndToken.value:', hasEvndToken.value);
+    console.log('🔍 evndTokenAddress.value:', evndTokenAddress.value);
+    
     if (hasEvndToken.value) {
         getEvndTransfers();
     } else {
+        console.log('❌ No eVND token configured, not fetching transfers');
         loading.value = false;
     }
 });
+
+// Watch for eVND token to become available
+watch(() => hasEvndToken.value, (hasToken) => {
+    console.log('👀 eVND token availability changed in AddressEvndTransfers:', hasToken);
+    if (hasToken && allEvndTransfers.value.length === 0 && !loading.value) {
+        console.log('🔄 eVND token now available, fetching transfers...');
+        getEvndTransfers();
+    }
+}, { immediate: false });
 </script>
 
 <style scoped>

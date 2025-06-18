@@ -70,12 +70,20 @@ export function useEvndContracts() {
     
     // Check if we have the eVND token contract
     const hasEvndToken = computed(() => {
-        return !!evndTokenContract.value?.fullAddress;
+        const result = !!evndTokenContract.value?.fullAddress;
+        console.log('🔍 useEvndContracts - hasEvndToken computed:', result, evndTokenContract.value);
+        return result;
     });
     
     // Check if we have entity registry for verification
     const hasEntityRegistry = computed(() => {
-        return !!entityRegistryContract.value?.fullAddress;
+        const result = !!entityRegistryContract.value?.fullAddress;
+        console.log('🔍 hasEntityRegistry computed:', {
+            result,
+            entityRegistryContract: entityRegistryContract.value,
+            fullAddress: entityRegistryContract.value?.fullAddress
+        });
+        return result;
     });
     
     // Get eVND token address for filtering
@@ -96,18 +104,32 @@ export function useEvndContracts() {
     
     // Fetch contracts from API
     const fetchEvndContracts = async () => {
-        if (!$server || loading.value) return;
+        if (!$server || loading.value) {
+            console.log('🔄 fetchEvndContracts skipped:', { 
+                hasServer: !!$server, 
+                loading: loading.value 
+            });
+            return;
+        }
+        
+        console.log('🔄 useEvndContracts - Starting fetchEvndContracts...');
+        console.log('🔄 useEvndContracts - Current workspace ID:', currentWorkspaceStore.id);
         
         loading.value = true;
         error.value = null;
         
         try {
             const response = await $server.getEvndContracts();
+            console.log('🔄 useEvndContracts - API response:', response);
+            
             if (response.data?.success && response.data?.contracts) {
                 evndContracts.value = response.data.contracts;
                 console.log('✅ Fetched eVND contracts:', evndContracts.value);
+                console.log('📋 Entity Registry found:', evndContracts.value.entity_registry);
+                console.log('📋 Entity Registry address:', evndContracts.value.entity_registry?.fullAddress);
             } else {
                 console.warn('No eVND contracts found or invalid response');
+                console.warn('Response data:', response.data);
                 evndContracts.value = {};
             }
         } catch (err) {

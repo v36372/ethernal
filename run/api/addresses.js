@@ -200,11 +200,8 @@ router.get('/:address/evnd-transfers', workspaceAuthMiddleware, async (req, res,
 
         if (!evndContract) {
             return res.status(200).json({
-                success: true,
-                data: {
-                    items: [],
-                    total: 0
-                }
+                items: [],
+                total: 0
             });
         }
 
@@ -241,11 +238,8 @@ router.get('/:address/evnd-transfers', workspaceAuthMiddleware, async (req, res,
         console.log(`[DEBUG] Found ${tokenTransfers.length} eVND token transfers`);
 
         res.status(200).json({
-            success: true,
-            data: {
-                items: tokenTransfers.map(transfer => transfer.toJSON()),
-                total: count
-            }
+            items: tokenTransfers.map(transfer => transfer.toJSON()),
+            total: count
         });
     } catch (error) {
         console.error('Error fetching eVND transfers:', error);

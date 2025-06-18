@@ -121,7 +121,7 @@
                 </v-list-item>
 
                 <!-- Conditional Items -->
-                <v-list-item v-if="explorerStore.isDemo || explorerStore.faucet || (envStore.isAdmin && currentWorkspaceStore.public)" 
+                <v-list-item v-if="explorerStore.isDemo || explorerStore.faucet || (envStore.isAdmin && currentWorkspaceStore.public)"
                     :to="'/faucet'" title="Faucet" :class="{ 'text-primary': route.path === '/faucet' }">
                     <template v-slot:title>
                         <span class="text-body-1">Faucet</span>
@@ -179,25 +179,22 @@
                             <img :src="logo" alt="logo" class="custom-logo" />
                         </router-link>
                     </div>
-                    <router-link v-else class="text-decoration-none mr-4" :to="'/overview'">
-                        <img src="/src/assets/images/gofs-logo.svg" alt="GOFS" class="gofs-logo" />
-                    </router-link>
                 </div>
 
                 <v-spacer></v-spacer>
 
                 <div class="d-flex align-center fill-height">
-                    <v-menu 
+                    <v-menu
                         v-model="blockchainMenuOpen"
-                        open-on-hover 
-                        :open-delay="0" 
+                        open-on-hover
+                        :open-delay="0"
                         :close-delay="100"
                         :close-on-content-click="false"
                         transition="scroll-y-transition"
                     >
                         <template v-slot:activator="{ props, isActive }">
-                            <v-btn 
-                                variant="plain" 
+                            <v-btn
+                                variant="plain"
                                 v-bind="props"
                                 @mouseleave="blockchainMenuOpen = false"
                                 :class="`opacity-100 d-flex align-center fill-height ${isActive || blockchainMenuOpen || isBlockchainActive ? 'text-primary' : 'text-default opacity-80'}`"
@@ -206,9 +203,9 @@
                                 <v-icon :icon="isActive ? 'mdi-chevron-up' : 'mdi-chevron-down'" class="ml-1"></v-icon>
                             </v-btn>
                         </template>
-                        <v-list 
-                            active-class="router-link-active" 
-                            border="opacity-100" 
+                        <v-list
+                            active-class="router-link-active"
+                            border="opacity-100"
                             class="border-t-lg border-primary opacity-100 rounded-t-0"
                             @mouseleave="blockchainMenuOpen = false"
                         >
@@ -245,17 +242,17 @@
                         </v-list>
                     </v-menu>
 
-                    <v-menu 
+                    <v-menu
                         v-model="tokensMenuOpen"
-                        open-on-hover 
-                        :open-delay="0" 
+                        open-on-hover
+                        :open-delay="0"
                         :close-delay="100"
                         :close-on-content-click="false"
                         transition="scroll-y-transition"
                     >
                         <template v-slot:activator="{ props, isActive }">
-                            <v-btn 
-                                variant="plain" 
+                            <v-btn
+                                variant="plain"
                                 v-bind="props"
                                 @mouseleave="tokensMenuOpen = false"
                                 :class="`opacity-100 d-flex align-center fill-height ${isActive || tokensMenuOpen || isTokensActive ? 'text-primary' : 'text-default opacity-80'}`"
@@ -264,9 +261,9 @@
                                 <v-icon :icon="isActive ? 'mdi-chevron-up' : 'mdi-chevron-down'" class="ml-1"></v-icon>
                             </v-btn>
                         </template>
-                        <v-list 
-                            active-class="router-link-active" 
-                            border="opacity-100" 
+                        <v-list
+                            active-class="router-link-active"
+                            border="opacity-100"
                             class="border-t-lg border-primary opacity-100 rounded-t-0"
                             @mouseleave="tokensMenuOpen = false"
                         >
@@ -310,10 +307,10 @@
 
                     <v-hover>
                         <template v-slot:default="{ isHovering, props }">
-                            <v-btn 
-                                variant="plain" 
-                                v-bind="props" 
-                                :to="'/analytics'" 
+                            <v-btn
+                                variant="plain"
+                                v-bind="props"
+                                :to="'/analytics'"
                                 :class="`opacity-100 d-flex align-center fill-height ${isHovering || route.path === '/analytics' ? 'text-primary' : 'text-default opacity-80'}`"
                             >Charts</v-btn>
                         </template>
@@ -321,10 +318,10 @@
 
                     <v-hover>
                         <template v-slot:default="{ isHovering, props }">
-                            <v-btn 
-                                variant="plain" 
-                                v-bind="props" 
-                                :to="'/evnd-dashboard'" 
+                            <v-btn
+                                variant="plain"
+                                v-bind="props"
+                                :to="'/evnd-dashboard'"
                                 :class="`opacity-100 d-flex align-center fill-height ${isHovering || route.path === '/evnd-dashboard' ? 'text-primary' : 'text-default opacity-80'}`"
                             >eVND Dashboard</v-btn>
                         </template>
@@ -333,10 +330,10 @@
                     <!-- Exchange Portal Link -->
                     <v-hover>
                         <template v-slot:default="{ isHovering, props }">
-                            <v-btn 
-                                variant="plain" 
-                                v-bind="props" 
-                                :to="'/exchange-portal'" 
+                            <v-btn
+                                variant="plain"
+                                v-bind="props"
+                                :to="'/exchange-portal'"
                                 :class="`opacity-100 d-flex align-center fill-height ${isHovering || route.path === '/exchange-portal' ? 'text-primary' : 'text-default opacity-80'}`"
                             >Exchange Portal</v-btn>
                         </template>
@@ -345,10 +342,10 @@
                     <!-- Faucet Link -->
                     <v-hover v-if="explorerStore.isDemo || explorerStore.faucet || (envStore.isAdmin && currentWorkspaceStore.public)">
                         <template v-slot:default="{ isHovering, props }">
-                            <v-btn 
-                                variant="plain" 
-                                v-bind="props" 
-                                :to="'/faucet'" 
+                            <v-btn
+                                variant="plain"
+                                v-bind="props"
+                                :to="'/faucet'"
                                 :class="`opacity-100 d-flex align-center fill-height ${isHovering || route.path === '/faucet' ? 'text-primary' : 'text-default opacity-80'}`"
                             >Faucet</v-btn>
                         </template>
@@ -357,10 +354,10 @@
                     <!-- DEX Link -->
                     <v-hover v-if="explorerStore.isDemo || explorerStore.v2Dex || (envStore.isAdmin && currentWorkspaceStore.public)">
                         <template v-slot:default="{ isHovering, props }">
-                            <v-btn 
-                                variant="plain" 
-                                v-bind="props" 
-                                :to="'/dex'" 
+                            <v-btn
+                                variant="plain"
+                                v-bind="props"
+                                :to="'/dex'"
                                 :class="`opacity-100 d-flex align-center fill-height ${isHovering || route.path === '/dex' ? 'text-primary' : 'text-default opacity-80'}`"
                             >DEX</v-btn>
                         </template>
@@ -369,10 +366,10 @@
                     <!-- Bridge Link -->
                     <v-hover v-if="explorerStore.isDemo || (envStore.isAdmin && currentWorkspaceStore.public)">
                         <template v-slot:default="{ isHovering, props }">
-                            <v-btn 
-                                variant="plain" 
-                                v-bind="props" 
-                                :to="'/bridge'" 
+                            <v-btn
+                                variant="plain"
+                                v-bind="props"
+                                :to="'/bridge'"
                                 :class="`d-flex align-center fill-height ${isHovering || route.path === '/bridge' ? 'text-primary opacity-100' : 'text-default opacity-80'}`"
                             >Bridge</v-btn>
                         </template>
@@ -383,10 +380,10 @@
                         <v-divider vertical class="my-2"></v-divider>
                         <v-hover>
                             <template v-slot:default="{ isHovering, props }">
-                                <v-btn 
-                                    variant="plain" 
-                                    v-bind="props" 
-                                    :to="'/explorers'" 
+                                <v-btn
+                                    variant="plain"
+                                    v-bind="props"
+                                    :to="'/explorers'"
                                     :class="`opacity-100 d-flex align-center fill-height ${isHovering || route.path.startsWith('/explorers') ? 'text-primary' : 'text-default opacity-80'}`"
                                 >Public Explorers</v-btn>
                             </template>
@@ -394,10 +391,10 @@
 
                         <v-hover>
                             <template v-slot:default="{ isHovering, props }">
-                                <v-btn 
-                                    variant="plain" 
-                                    v-bind="props" 
-                                    :to="'/settings?tab=workspace'" 
+                                <v-btn
+                                    variant="plain"
+                                    v-bind="props"
+                                    :to="'/settings?tab=workspace'"
                                     :class="`opacity-100 d-flex align-center fill-height ${isHovering || route.path === '/settings' ? 'text-primary' : 'text-default opacity-80'}`"
                                 >Settings</v-btn>
                             </template>
@@ -405,11 +402,11 @@
 
                         <v-hover>
                             <template v-slot:default="{ isHovering, props }">
-                                <v-btn 
-                                    variant="plain" 
-                                    v-bind="props" 
-                                    @click="logOut" 
-                                    :to="'/logout'" 
+                                <v-btn
+                                    variant="plain"
+                                    v-bind="props"
+                                    @click="logOut"
+                                    :to="'/logout'"
                                     :class="`d-flex align-center fill-height ${isHovering ? 'text-error' : 'text-error opacity-80'}`"
                                 >Logout</v-btn>
                             </template>
@@ -490,8 +487,8 @@ const isBlockchainActive = computed(() => {
 
 const isTokensActive = computed(() => {
     const tokenRoutes = [
-        '/tokens', 
-        '/toptokens', 
+        '/tokens',
+        '/toptokens',
         '/tokenstxn',
         '/nfts',
         '/nft-top-contracts',

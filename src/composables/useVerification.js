@@ -54,7 +54,28 @@ export function useVerification() {
     
     // Verify an address by calling the smart contract
     const verifyAddress = async (address) => {
-        if (!address || !hasVerificationContract.value || !currentWorkspaceStore.rpcServer) {
+        console.log('🔍 verifyAddress called with:', {
+            address,
+            hasVerificationContract: hasVerificationContract.value,
+            verificationContractAddress: verificationContractAddress.value,
+            entityRegistryAddress: entityRegistryAddress.value,
+            rpcServer: currentWorkspaceStore.rpcServer,
+            serverInstance: !!$server
+        });
+
+        if (!address) {
+            console.log('❌ Verification failed: No address provided');
+            return false;
+        }
+        
+        if (!hasVerificationContract.value) {
+            console.log('❌ Verification failed: No verification contract configured');
+            console.log('📋 Entity Registry Address:', entityRegistryAddress.value);
+            return false;
+        }
+        
+        if (!currentWorkspaceStore.rpcServer) {
+            console.log('❌ Verification failed: No RPC server configured');
             return false;
         }
         
@@ -81,24 +102,40 @@ export function useVerification() {
             console.log(`Verification contract: ${verificationContractAddress.value}`);
             console.log(`RPC Server: ${currentWorkspaceStore.rpcServer}`);
             
-            // Call the verification contract
-            const result = await $server.callContractReadMethod(
-                {
-                    address: verificationContractAddress.value,
-                    abi: VERIFICATION_ABI
-                },
-                'isVerifiedEntity',
-                {
-                    from: null,
-                    gasLimit: null,
-                    gasPrice: null,
-                    blockTag: 'latest'
-                },
-                { 0: address.toLowerCase() }, // Ensure consistent case for contract call
-                currentWorkspaceStore.rpcServer
-            );
+            console.log('🚀 About to call contract method with params:', {
+                contractAddress: verificationContractAddress.value,
+                method: 'isVerifiedEntity',
+                params: { 0: address.toLowerCase() },
+                rpcServer: currentWorkspaceStore.rpcServer,
+                abi: VERIFICATION_ABI
+            });
             
-            console.log(`Raw verification result:`, result);
+            // Call the verification contract
+            let result;
+            try {
+                console.log('🔄 Making contract call...');
+                result = await $server.callContractReadMethod(
+                    {
+                        address: verificationContractAddress.value,
+                        abi: VERIFICATION_ABI
+                    },
+                    'isVerifiedEntity',
+                    {
+                        from: null,
+                        gasLimit: null,
+                        gasPrice: null,
+                        blockTag: 'latest'
+                    },
+                    { 0: address.toLowerCase() }, // Ensure consistent case for contract call
+                    currentWorkspaceStore.rpcServer
+                );
+                console.log(`✅ Contract call successful!`);
+            } catch (contractError) {
+                console.error('❌ Contract call failed:', contractError);
+                throw contractError;
+            }
+            
+            console.log(`✅ Raw verification result:`, result);
             
             // Parse the result - ethers returns an array
             let isVerified = false;

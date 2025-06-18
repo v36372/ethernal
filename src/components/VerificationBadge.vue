@@ -53,6 +53,12 @@ const isLoading = ref(false);
 
 // Check verification status
 const checkVerification = async () => {
+    console.log('🔍 VerificationBadge.checkVerification called:', {
+        address: props.address,
+        hasVerificationContract: hasVerificationContract.value,
+        isLoading: isLoading.value
+    });
+    
     if (!props.address || !hasVerificationContract.value || isLoading.value) return;
     
     isLoading.value = true;
@@ -82,6 +88,14 @@ watch(() => props.address, () => {
         checkVerification();
     }
 }, { immediate: true });
+
+// Watch for verification contract availability changes
+watch(() => hasVerificationContract.value, (hasContract) => {
+    console.log('🔄 VerificationBadge: hasVerificationContract changed to:', hasContract);
+    if (hasContract && props.autoCheck && props.address) {
+        checkVerification();
+    }
+});
 
 // Force refresh verification (clear cache and recheck)
 const forceRefresh = async () => {

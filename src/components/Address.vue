@@ -185,7 +185,7 @@ const loadingContract = ref(true);
 const loadingStats = ref(true);
 const contract = ref(null);
 const addressTransactionStats = ref({});
-const activeTab = ref(hasEvndToken.value ? 'evndtxns' : 'transactions');
+const activeTab = ref('transactions'); // Start with default tab
 
 const totalTransactions = computed(() => {
     if (!addressTransactionStats.value.sent && !addressTransactionStats.value.received) return 0;
@@ -257,6 +257,22 @@ onBeforeUnmount(() => {
 // Watchers
 watch(() => props.address, (address) => {
     loadContractData(address);
+}, { immediate: true });
+
+// Watch for eVND token availability and update default tab
+watch(() => hasEvndToken.value, (value) => {
+    console.log('📱 Address.vue - hasEvndToken changed:', value);
+    
+    // If eVND token becomes available and we're on the default transactions tab,
+    // switch to eVND transfers if URL hash indicates it
+    const hash = window.location.hash.substring(1);
+    if (value && hash === 'evndtxns') {
+        activeTab.value = 'evndtxns';
+    } else if (value && !hash) {
+        // Default to eVND transfers when no hash is set and eVND is available
+        activeTab.value = 'evndtxns';
+        window.location.hash = 'evndtxns';
+    }
 }, { immediate: true });
 
 // Watch for tab changes to update the URL hash
