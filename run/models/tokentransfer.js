@@ -167,7 +167,7 @@ module.exports = (sequelize, DataTypes) => {
     tokenId: {
         type: DataTypes.INTEGER,
         set(value) {
-            this.setDataValue('tokenId', parseInt(value))
+            this.setDataValue('tokenId', value === null || value === undefined ? null : parseInt(value))
         }
     },
     transactionId: DataTypes.INTEGER,
