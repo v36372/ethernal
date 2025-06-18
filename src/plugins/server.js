@@ -391,15 +391,17 @@ export default {
                 return axios.get(resource, { params });
             },
 
-            getAddressTokenTransferHistory(address, from, to) {
-                const params = {
-                    firebaseUserId: firebaseUserId.value,
-                    workspace: workspace.value,
-                    address,
-                    from,
-                    to
-                };
-                const resource = `${envStore.apiRoot}/api/addresses/${address}/tokenTransferHistory`;
+            getAddressTokenTransfers(address, options) {
+                const params = { firebaseUserId: firebaseUserId.value, workspace: workspace.value, ...options };
+
+                const resource = `${envStore.apiRoot}/api/addresses/${address}/tokenTransfers`;
+                return axios.get(resource, { params });
+            },
+
+            getAddressEvndTransfers(address, options) {
+                const params = { firebaseUserId: firebaseUserId.value, workspace: workspace.value, ...options };
+
+                const resource = `${envStore.apiRoot}/api/addresses/${address}/evnd-transfers`;
                 return axios.get(resource, { params });
             },
 
@@ -942,13 +944,6 @@ export default {
             signIn(email, password, explorerToken) {
                 const resource = `${envStore.apiRoot}/api/users/signin`;
                 return axios.post(resource, { email, password, explorerToken });
-            },
-
-            getAddressTokenTransfers(address, options) {
-                const params = { firebaseUserId: firebaseUserId.value, workspace: workspace.value, ...options };
-
-                const resource = `${envStore.apiRoot}/api/addresses/${address}/tokenTransfers`;
-                return axios.get(resource, { params });
             },
 
             getAddressStats(address) {

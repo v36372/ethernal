@@ -1,0 +1,60 @@
+<svg width="160" height="40" viewBox="0 0 160 40" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .bg-light { fill: #ffffff; }
+      .bg-dark { fill: #1a1b3a; }
+      .text-light { fill: #1a1b3a; }
+      .text-dark { fill: #ffffff; }
+      .accent { fill: #00f5a0; stroke: #00f5a0; }
+      .subtitle-light { fill: #666666; }
+      .subtitle-dark { fill: #aaaaaa; }
+      
+      @media (prefers-color-scheme: dark) {
+        .bg-light { fill: #1a1b3a; }
+        .text-light { fill: #ffffff; }
+        .subtitle-light { fill: #aaaaaa; }
+      }
+      
+      /* Theme classes for manual theme switching */
+      .v-theme--dark .bg-light { fill: #1a1b3a; }
+      .v-theme--dark .text-light { fill: #ffffff; }
+      .v-theme--dark .subtitle-light { fill: #aaaaaa; }
+      
+      .v-theme--light .bg-light { fill: #ffffff; }
+      .v-theme--light .text-light { fill: #1a1b3a; }
+      .v-theme--light .subtitle-light { fill: #666666; }
+    </style>
+  </defs>
+  
+  <!-- Background (responsive to theme) -->
+  <rect width="160" height="40" class="bg-light" rx="4"/>
+  
+  <!-- Geometric Logo Design -->
+  <g transform="translate(8, 8)">
+    <!-- Outer diamond frames -->
+    <path d="M12 2 L20 10 L12 18 L4 10 Z" fill="none" class="accent" stroke-width="1.5"/>
+    <path d="M16 6 L22 12 L16 18 L10 12 Z" fill="none" class="accent" stroke-width="1"/>
+    
+    <!-- Central layered structure -->
+    <rect x="10" y="8" width="8" height="6" class="accent" opacity="0.8"/>
+    <rect x="11" y="9" width="6" height="4" class="bg-light"/>
+    <rect x="12" y="10" width="4" height="2" class="accent" opacity="0.6"/>
+    
+    <!-- Connection points -->
+    <circle cx="6" cy="6" r="1" class="accent"/>
+    <circle cx="22" cy="6" r="1" class="accent"/>
+    <circle cx="6" cy="16" r="1" class="accent"/>
+    <circle cx="22" cy="16" r="1" class="accent"/>
+    
+    <!-- Inner connections -->
+    <line x1="8" y1="10" x2="20" y2="10" class="accent" stroke-width="0.5"/>
+    <line x1="12" y1="6" x2="12" y2="16" class="accent" stroke-width="0.5"/>
+    <line x1="16" y1="6" x2="16" y2="16" class="accent" stroke-width="0.5"/>
+  </g>
+  
+  <!-- GOFS Text -->
+  <text x="40" y="22" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="bold" class="text-light">GOFS</text>
+  
+  <!-- Subtitle -->
+  <text x="40" y="32" font-family="Inter, Arial, sans-serif" font-size="6" class="subtitle-light">Governable Onchain Finance System</text>
+</svg> 

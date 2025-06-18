@@ -199,40 +199,36 @@ const getRowProps = (item) => {
 const getEvndTransfers = () => {
     // Check if we have eVND token configured via API
     if (!hasEvndToken.value) {
+        console.log('❌ No eVND token configured');
         loading.value = false;
         return;
     }
 
+    console.log(`🔍 Fetching eVND transfers for address: ${props.address}`);
+    console.log(`📋 eVND token address: ${evndTokenAddress.value}`);
+    
     loading.value = true;
 
-    // Fetch a larger batch of token transfers to filter from
-    $server.getAddressTokenTransfers(props.address, {
+    // Use the dedicated eVND transfers API endpoint that leverages the isEvndTransfer flag
+    $server.getAddressEvndTransfers(props.address, {
         page: 1,
-        itemsPerPage: 500, // Get more transfers to filter from
+        itemsPerPage: 500,
         orderBy: 'blockNumber',
         order: 'desc'
-        // Don't filter by tokenTypes here - get all transfers then filter client-side
     })
     .then(({ data }) => {
-        console.log('Fetched transfers:', data.items.length);
-        // Filter for eVND transfers only
-        const evndTransfers = data.items.filter(transfer => {
-            const isEvnd = isEvndTokenTransfer(transfer);
-            
-            if (isEvnd) {
-                console.log('Found eVND transfer:', transfer, {
-                    tokenAddress: transfer.token,
-                    evndAddress: evndTokenAddress.value
-                });
-            }
-            return isEvnd;
-        });
+        console.log('✅ Fetched eVND transfers directly:', data.items.length);
+        allEvndTransfers.value = data.items || [];
         
-        console.log('Filtered eVND transfers:', evndTransfers.length);
-        allEvndTransfers.value = evndTransfers;
+        // Log some details for debugging
+        if (data.items.length > 0) {
+            console.log('📊 Sample eVND transfer:', data.items[0]);
+        } else {
+            console.log('⚠️  No eVND transfers found using dedicated API');
+        }
     })
     .catch(error => {
-        console.error('Error fetching eVND transfers:', error);
+        console.error('❌ Error fetching eVND transfers:', error);
         allEvndTransfers.value = [];
     })
     .finally(() => loading.value = false);

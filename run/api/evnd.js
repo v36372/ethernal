@@ -61,12 +61,7 @@ router.get('/dashboard/test', async (req, res, next) => {
                     address: '0xDc64...C6C9',
                     fullAddress: '0xDc6454B9F2F83b2A0F4b30D3C1c33F30c2C6C9'
                 },
-                exchange_portal: {
-                    name: 'Exchange Portal',
-                    icon: '🔄', 
-                    address: '0x0B30...7016',
-                    fullAddress: '0x0B30a94F3E0b72A8D89cFF0F6C1c7016'
-                },
+
                 entity_registry: {
                     name: 'Entity Registry',
                     icon: '📋',
@@ -192,7 +187,7 @@ router.get('/dashboard', workspaceAuthMiddleware, async (req, res, next) => {
         };
 
         // Format system components - only show essential contracts for dashboard
-        const allowedContractTypes = ['evnd_token', 'exchange_portal', 'entity_registry', 'compliance_registry', 'musd', 'address_restriction_compliance', 'verification_compliance'];
+        const allowedContractTypes = ['evnd_token', 'entity_registry', 'compliance_registry', 'musd', 'address_restriction_compliance', 'verification_compliance'];
         const systemComponents = contracts
             .filter(contract => allowedContractTypes.includes(contract.contractType))
             .reduce((acc, contract) => {

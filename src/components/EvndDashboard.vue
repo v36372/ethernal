@@ -175,59 +175,7 @@
                     </v-card-text>
                 </v-card>
 
-                <!-- Exchange Portal Status -->
-                <v-card class="dashboard-card mt-6" elevation="2" v-if="dashboardData?.exchangePortalStatus">
-                    <v-card-text class="pa-6">
-                        <div class="section-header mb-6">
-                            <v-icon class="mr-3" size="28">🔄</v-icon>
-                            <h2 class="text-h5 font-weight-bold">EXCHANGE PORTAL STATUS</h2>
-                        </div>
 
-                        <!-- Current Rates Section -->
-                        <v-card class="components-card mb-4" elevation="1">
-                            <v-card-text class="pa-4">
-                                <div class="exchange-section">
-                                    <h4 class="text-h6 font-weight-bold mb-3">Current Rates (Government Controlled):</h4>
-                                    <div class="rate-display">
-                                        <span class="rate-bullet">•</span>
-                                        <span class="rate-text">{{ dashboardData.exchangePortalStatus.currentRates.displayText }}</span>
-                                        <span class="rate-updated">(Updated: {{ dashboardData.exchangePortalStatus.currentRates.lastUpdated }})</span>
-                                    </div>
-                                </div>
-                            </v-card-text>
-                        </v-card>
-
-                        <!-- Money Flow Analytics -->
-                        <v-card class="components-card" elevation="1">
-                            <v-card-text class="pa-4">
-                                <div class="analytics-header mb-4">
-                                    <v-icon class="mr-2" size="24">📊</v-icon>
-                                    <h4 class="text-h6 font-weight-bold">Money Flow Analytics</h4>
-                                </div>
-                                <div class="analytics-grid">
-                                    <div class="analytics-row">
-                                        <span class="analytics-period">Today:</span>
-                                        <span class="analytics-flow">{{ dashboardData.exchangePortalStatus.moneyFlowAnalytics.today.inflow }}</span>
-                                        <span class="analytics-separator">|</span>
-                                        <span class="analytics-transactions">{{ dashboardData.exchangePortalStatus.moneyFlowAnalytics.today.transactions }}</span>
-                                    </div>
-                                    <div class="analytics-row">
-                                        <span class="analytics-period">This Month:</span>
-                                        <span class="analytics-flow">{{ dashboardData.exchangePortalStatus.moneyFlowAnalytics.thisMonth.net }}</span>
-                                        <span class="analytics-separator">|</span>
-                                        <span class="analytics-transactions">{{ dashboardData.exchangePortalStatus.moneyFlowAnalytics.thisMonth.transactions }}</span>
-                                    </div>
-                                    <div class="analytics-row">
-                                        <span class="analytics-period">This Year:</span>
-                                        <span class="analytics-flow">{{ dashboardData.exchangePortalStatus.moneyFlowAnalytics.thisYear.net }}</span>
-                                        <span class="analytics-separator">|</span>
-                                        <span class="analytics-transactions">{{ dashboardData.exchangePortalStatus.moneyFlowAnalytics.thisYear.transactions }}</span>
-                                    </div>
-                                </div>
-                            </v-card-text>
-                        </v-card>
-                    </v-card-text>
-                </v-card>
 
                 <!-- Loading State -->
                 <div v-if="loading" class="text-center mt-4">
@@ -358,6 +306,8 @@ const copyToClipboard = async (text) => {
 const navigateToAddress = (address) => {
     router.push(`/address/${address}`);
 };
+
+
 
 // Lifecycle
 onMounted(() => {

@@ -17,8 +17,8 @@
                             <img :src="logo" alt="logo" class="custom-logo" />
                         </router-link>
                     </div>
-                    <router-link v-else class="text-decoration-none text-h6 text-primary" :to="'/overview'">
-                        {{ currentWorkspaceStore.name || 'Ethernal' }}
+                    <router-link v-else class="text-decoration-none" :to="'/overview'">
+                        <img src="/src/assets/images/gofs-logo.svg" alt="GOFS" class="gofs-logo-mobile" />
                     </router-link>
                 </v-list-item>
 
@@ -136,9 +136,9 @@
                 </v-list-item>
 
                 <v-list-item v-if="explorerStore.isDemo || (envStore.isAdmin && currentWorkspaceStore.public)"
-                    :to="'/bridge'" title="Bridge" :class="{ 'text-primary': route.path === '/bridge' }">
+                    :to="'/exchange-portal'" title="Exchange Portal" :class="{ 'text-primary': route.path === '/exchange-portal' }">
                     <template v-slot:title>
-                        <span class="text-body-1">Bridge</span>
+                        <span class="text-body-1">Exchange Portal</span>
                     </template>
                 </v-list-item>
 
@@ -179,8 +179,8 @@
                             <img :src="logo" alt="logo" class="custom-logo" />
                         </router-link>
                     </div>
-                    <router-link v-else class="text-decoration-none text-h6 text-primary" :to="'/overview'">
-                        {{ currentWorkspaceStore.name || 'Ethernal' }}
+                    <router-link v-else class="text-decoration-none mr-4" :to="'/overview'">
+                        <img src="/src/assets/images/gofs-logo.svg" alt="GOFS" class="gofs-logo" />
                     </router-link>
                 </div>
 
@@ -330,6 +330,18 @@
                         </template>
                     </v-hover>
 
+                    <!-- Exchange Portal Link -->
+                    <v-hover>
+                        <template v-slot:default="{ isHovering, props }">
+                            <v-btn 
+                                variant="plain" 
+                                v-bind="props" 
+                                :to="'/exchange-portal'" 
+                                :class="`opacity-100 d-flex align-center fill-height ${isHovering || route.path === '/exchange-portal' ? 'text-primary' : 'text-default opacity-80'}`"
+                            >Exchange Portal</v-btn>
+                        </template>
+                    </v-hover>
+
                     <!-- Faucet Link -->
                     <v-hover v-if="explorerStore.isDemo || explorerStore.faucet || (envStore.isAdmin && currentWorkspaceStore.public)">
                         <template v-slot:default="{ isHovering, props }">
@@ -421,6 +433,7 @@ import { useExplorerStore } from '../stores/explorer';
 import { useUserStore } from '../stores/user';
 import { useRoute } from 'vue-router';
 import WalletConnector from './WalletConnector.vue';
+
 
 // Menu state controls
 const blockchainMenuOpen = ref(false);
@@ -632,6 +645,28 @@ const logOut = () => {
 /* Logo styles */
 .custom-logo {
     max-height: 40px;
+}
+
+.gofs-logo {
+    max-height: 40px;
+    width: auto;
+    transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.gofs-logo:hover {
+    transform: scale(1.05);
+    filter: brightness(1.1);
+}
+
+.gofs-logo-mobile {
+    max-height: 32px;
+    width: auto;
+    transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.gofs-logo-mobile:hover {
+    transform: scale(1.05);
+    filter: brightness(1.1);
 }
 
 /* Fix for text colors in buttons */

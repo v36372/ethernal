@@ -21,7 +21,7 @@ import ExplorerAnalytics from '../components/ExplorerAnalytics.vue';
 import ExplorerFaucet from '../components/ExplorerFaucet.vue';
 import ExplorerDex from '../components/ExplorerDex.vue';
 import GasTracker from '../components/GasTracker.vue';
-import ExplorerBridge from '../components/ExplorerBridge.vue';
+
 import TopERC20Tokens from '../components/TopERC20Tokens.vue';
 import TopNFT from '../components/TopNFT.vue';
 import WorkspaceTokenTransfer from '../components/WorkspaceTokenTransfer.vue';
@@ -30,6 +30,7 @@ import TokenContract from '../components/TokenContract.vue';
 import EvndDashboard from '../components/EvndDashboard.vue';
 import { useEnvStore } from '../stores/env';
 import VerifiedContracts from '@/components/VerifiedContracts.vue'
+import ExchangePortal from '../components/ExchangePortal.vue';
 
 const isLoggedIn = () => {
     return localStorage.getItem('apiToken') !== null;
@@ -102,7 +103,7 @@ const routes = [
     { path: '/status', component: ExplorerStatus, beforeEnter: redirectIfLoggedOut },
     { path: '/faucet', component: ExplorerFaucet, beforeEnter: redirectIfLoggedOut },
     { path: '/dex', component: ExplorerDex, beforeEnter: redirectIfLoggedOut },
-    { path: '/bridge', component: ExplorerBridge, beforeEnter: redirectIfLoggedOut },
+    { path: '/exchange-portal', component: ExchangePortal, beforeEnter: redirectIfLoggedOut },
     { path: '/:pathMatch(.*)*', name: 'not-found', component: Overview, beforeEnter: redirectIfLoggedOut }
 ];
 
