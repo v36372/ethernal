@@ -29,7 +29,7 @@ const getTxSynced = async (uid, workspace, transaction, receipt, timestamp) => {
     const sTransaction = _stringifyBns(_sanitize(transaction));
 
     let contractAbi = null;
-    
+
     if (sTransactionReceipt && transaction.to && transaction.data != '0x') {
         const contractData = await db.getContractData(uid, workspace, transaction.to);
         contractAbi = contractData ? contractData.abi : null
@@ -59,13 +59,11 @@ const processTransactions = async (transactionIds) => {
             contract = await db.getContractData(userId, workspaceName, transaction.to);
         }
         else if (transaction.receipt) {
-            const canSync = await db.canUserSyncContract(userId, workspaceName, transaction.receipt.contractAddress);
-            if (canSync) {
-                await db.storeContractData(userId, workspaceName, transaction.receipt.contractAddress, {
-                    address: transaction.receipt.contractAddress,
-                    timestamp: moment(transaction.timestamp).unix()
-                });
-            }
+            // Remove canUserSyncContract check - always allow contract syncing
+            await db.storeContractData(userId, workspaceName, transaction.receipt.contractAddress, {
+                address: transaction.receipt.contractAddress,
+                timestamp: moment(transaction.timestamp).unix()
+            });
         }
 
         if (contract && contract.proxy)
@@ -73,16 +71,16 @@ const processTransactions = async (transactionIds) => {
 
         const workspace = await db.getWorkspaceByName(userId, workspaceName);
 
-        if (!workspace.public)
-            continue;
+        // Remove public workspace restriction - allow processing on all workspaces
+        // if (!workspace.public)
+        //     continue;
 
         if (transaction.tokenTransfers) {
             try {
                 const tokenTransfers = transaction.tokenTransfers;
                 for (let i = 0; i < tokenTransfers.length; i++) {
-                    const canSync = await db.canUserSyncContract(userId, workspaceName, tokenTransfers[i].token);
-                    if (canSync)
-                        await db.storeContractData(userId, workspaceName, tokenTransfers[i].token, { address: tokenTransfers[i].token });
+                    // Remove canUserSyncContract check - always allow token contract syncing
+                    await db.storeContractData(userId, workspaceName, tokenTransfers[i].token, { address: tokenTransfers[i].token });
                 }
             } catch(_error) {}
         }

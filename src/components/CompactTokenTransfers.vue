@@ -6,7 +6,10 @@
         v-for="(transfer, index) in displayedTransfers"
         :key="transfer.id || index"
         class="embedded-transfer-item py-2 px-0 rounded-sm"
-        :class="{'border-bottom': index < displayedTransfers.length - 1}"
+        :class="{
+          'border-bottom': index < displayedTransfers.length - 1,
+          'evnd-token-transfer': isEvndTokenTransfer(transfer)
+        }"
       >
         <div class="d-flex align-center">
           <!-- Transfer Sentence -->
@@ -40,6 +43,15 @@
             </span>
             
             <span class="mx-1">
+              <v-icon 
+                v-if="isEvndTokenTransfer(transfer)" 
+                color="amber" 
+                size="small" 
+                class="mr-1"
+                v-tooltip="'eVND Transfer'"
+              >
+                mdi-star
+              </v-icon>
               <template v-if="transfer.contract.tokenName">
                 <Hash-Link
                   :type="'address'"
@@ -61,6 +73,15 @@
                   truncate="true"
                 />)
               </template>
+              <v-chip 
+                v-if="isEvndTokenTransfer(transfer)" 
+                color="amber" 
+                size="x-small" 
+                variant="flat"
+                class="ml-1"
+              >
+                eVND
+              </v-chip>
             </span>
           </span>
         </div>
@@ -105,6 +126,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
 import HashLink from './HashLink.vue';
+import { useEvndToken } from '@/composables/useEvndToken';
 
 const props = defineProps({
   transfers: Array,
@@ -124,6 +146,9 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['view-all', 'refresh', 'pagination', 'update:options']);
+
+// eVND token composable
+const { isEvndTokenTransfer } = useEvndToken();
 
 // Reactive state
 const unformatted = ref(false);
@@ -253,5 +278,13 @@ onMounted(() => {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+}
+
+.evnd-token-transfer {
+  background: linear-gradient(90deg, rgba(255, 193, 7, 0.08) 0%, rgba(255, 193, 7, 0.03) 100%) !important;
+  border-left: 3px solid #FFC107 !important;
+  border-radius: 4px !important;
+  padding-left: 8px !important;
+  margin: 2px 0 !important;
 }
 </style>

@@ -1,6 +1,6 @@
 networks:
   ethernal:
-    driver: bridge  
+    driver: bridge
 
 volumes:
   db:
@@ -20,7 +20,7 @@ services:
     container_name: postgres
     restart: always
     env_file: .env.postgres.prod
-    volumes: 
+    volumes:
       - db:/var/lib/postgresql/data
       - ./postgresql.conf:/etc/postgresql/postgresql.conf
     command: postgres -c config_file=/etc/postgresql/postgresql.conf
@@ -38,28 +38,61 @@ services:
     container_name: redis
     restart: always
     command: redis-server --save 20 1 --loglevel warning
-    volumes: 
+    volumes:
       - redis:/data
 
   frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+      target: dev
     networks:
       - ethernal
-    image: antoinedc44/ethernal-frontend:latest
+    volumes:
+      - ./src:/app/src
+      - ./public:/app/public
+      - ./.env:/app/.env
     container_name: frontend
+    command: yarn serve
     restart: always
 
+  anvil:
+    image: ghcr.io/foundry-rs/foundry
+    container_name: anvil
+    environment:
+      ANVIL_IP_ADDR: "0.0.0.0"
+    working_dir: /anvil
+    ports:
+      - "8545:8545"
+    entrypoint: ["anvil", "--allow-origin", "*", "--block-time", "5"]
+
   backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    volumes:
+      - ./run:/app
+      - ./run/.env:/app/.env
+    ports:
+      - "8888:8888"
     networks:
       - ethernal
-    image: antoinedc44/ethernal-backend:latest
+    # image: antoinedc44/ethernal-backend:latest
     container_name: backend
     depends_on:
       - postgres
       - redis
     restart: always
+    command: npm run start
     env_file: ./run/.env.prod
 
   high_priority_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    volumes:
+      - ./run:/app
+      #  - ./run/.env:/app/.env
     networks:
       - ethernal
     container_name: highPriority
@@ -67,11 +100,17 @@ services:
       - postgres
       - redis
     restart: always
-    image: antoinedc44/ethernal-backend:latest
+    #image: antoinedc44/ethernal-backend:latest
     command: node workers/highPriority.js
     env_file: ./run/.env.prod
 
   medium_priority_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    volumes:
+      - ./run:/app
+      #  - ./run/.env:/app/.env
     networks:
       - ethernal
     container_name: mediumPriority
@@ -79,11 +118,17 @@ services:
       - postgres
       - redis
     restart: always
-    image: antoinedc44/ethernal-backend:latest
+    #image: antoinedc44/ethernal-backend:latest
     command: node workers/mediumPriority.js
     env_file: ./run/.env.prod
 
   low_priority_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    volumes:
+      - ./run:/app
+      #  - ./run/.env:/app/.env
     networks:
       - ethernal
     container_name: lowPriority
@@ -91,7 +136,7 @@ services:
       - postgres
       - redis
     restart: always
-    image: antoinedc44/ethernal-backend:latest
+    #image: antoinedc44/ethernal-backend:latest
     command: node workers/lowPriority.js
     env_file: ./run/.env.prod
 

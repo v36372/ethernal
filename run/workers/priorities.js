@@ -19,7 +19,8 @@ const priorities = {
         'reprocessWorkspaceTransactionErrors',
         'processExplorerV2Dex',
         'processExplorerV2DexPair',
-        'setupV2DexPoolReserves'
+        'setupV2DexPoolReserves',
+        'updateEvndTransferFlags'
     ],
     'low': [
         'processUser',

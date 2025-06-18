@@ -209,11 +209,12 @@ router.put('/:id/startSync', [authMiddleware], async (req, res, next) => {
         if (!explorer)
             return managedError(new Error(`Couldn't find explorer.`), req, res);
 
-        if (!explorer.stripeSubscription)
-            return managedError(new Error(`No active subscription for this explorer.`), req, res);
+        // Remove subscription and quota checks - always allow sync start
+        // if (!explorer.stripeSubscription)
+        //     return managedError(new Error(`No active subscription for this explorer.`), req, res);
 
-        if (await explorer.hasReachedTransactionQuota())
-            return managedError(new Error('Transaction quota reached. Upgrade your plan to resume sync.'), req, res);
+        // if (await explorer.hasReachedTransactionQuota())
+        //     return managedError(new Error('Transaction quota reached. Upgrade your plan to resume sync.'), req, res);
 
         const provider = new ProviderConnector(explorer.workspace.rpcServer);
         try {
@@ -244,9 +245,10 @@ router.get('/:id/syncStatus', [authMiddleware], async (req, res, next) => {
         if (explorer.workspace.rpcHealthCheck && !explorer.workspace.rpcHealthCheck.isReachable) {
             status = 'unreachable';
         }
-        else if (await explorer.hasReachedTransactionQuota()) {
-            status = 'transactionQuotaReached';
-        }
+        // Remove transaction quota check from sync status
+        // else if (await explorer.hasReachedTransactionQuota()) {
+        //     status = 'transactionQuotaReached';
+        // }
         else {
             const pm2 = new PM2(process.env.PM2_HOST, process.env.PM2_SECRET);
             const { data: { pm2_env: pm2Process }} = await pm2.find(explorer.slug);

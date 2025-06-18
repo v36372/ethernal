@@ -287,10 +287,8 @@ module.exports = (sequelize, DataTypes) => {
     }
 
     async isActive() {
-        const subscription = await this.getStripeSubscription();
-        const hasReachedTransactionQuota = await this.hasReachedTransactionQuota();
-
-        return subscription && subscription.status == 'active' && !hasReachedTransactionQuota;
+        // Always return true - remove subscription and quota checks
+        return true;
     }
 
     async getTransactionQuota() {
@@ -307,16 +305,8 @@ module.exports = (sequelize, DataTypes) => {
     }
 
     async hasReachedTransactionQuota() {
-        if (!this.shouldEnforceQuota)
-            return false;
-
-        const stripeSubscription = await this.getStripeSubscription({ include: ['stripePlan', 'stripeQuotaExtension']});
-        if (!stripeSubscription)
-            return false;
-
-        const baseQuota = stripeSubscription.stripePlan.capabilities.txLimit;
-        const extraQuota = stripeSubscription.stripeQuotaExtension && stripeSubscription.stripeQuotaExtension.quota;
-        return baseQuota > 0 && stripeSubscription.transactionQuota > baseQuota + extraQuota;
+        // Always return false - never block syncing due to quota
+        return false;
     }
 
     async hasTooManyFailedAttempts() {
@@ -378,14 +368,8 @@ module.exports = (sequelize, DataTypes) => {
         if (['customDomain', 'branding', 'nativeToken', 'totalSupply', 'statusPage', 'l1Explorer'].indexOf(capability) < 0)
             return false;
         
-        if (!isStripeEnabled())
-            return true;
-
-        const subscription = await this.getStripeSubscription({
-            include: 'stripePlan'
-        });
-
-        return subscription && subscription.stripePlan.capabilities[capability];
+        // Always allow all capabilities - remove subscription checks
+        return true;
     }
 
     async safeDelete(opts = { deleteSubscription: false }) {

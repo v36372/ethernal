@@ -196,12 +196,38 @@ router.post('/me/setCurrentWorkspace', authMiddleware, async (req, res, next) =>
     }
 });
 
+// Helper function to transform Docker internal URLs to localhost URLs
+const transformDockerUrls = (obj) => {
+    if (!obj) return obj;
+    
+    if (typeof obj === 'string') {
+        return obj.replace(/http:\/\/host\.docker\.internal:/g, 'http://127.0.0.1:');
+    }
+    
+    if (Array.isArray(obj)) {
+        return obj.map(transformDockerUrls);
+    }
+    
+    if (typeof obj === 'object') {
+        const transformed = {};
+        for (const [key, value] of Object.entries(obj)) {
+            transformed[key] = transformDockerUrls(value);
+        }
+        return transformed;
+    }
+    
+    return obj;
+};
+
 router.get('/me', authMiddleware, async (req, res, next) => {
     const data = req.body.data;
     try {
         const user = await db.getUser(data.uid, ['apiToken', 'apiKey', 'canTrial', 'canUseDemoPlan']);
-
-        res.status(200).json(user);
+        
+        // Transform any Docker internal URLs to localhost URLs
+        const transformedUser = transformDockerUrls(user);
+        
+        res.status(200).json(transformedUser);
     } catch(error) {
         unmanagedError(error, req, next);
     }

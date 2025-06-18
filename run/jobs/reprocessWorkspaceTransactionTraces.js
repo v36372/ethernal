@@ -11,8 +11,9 @@ module.exports = async job => {
 
     const workspace = await Workspace.findByPk(data.workspaceId);
 
-    if (!workspace.public)
-        return 'Not allowed on private workspaces';
+    // Always reprocess transaction traces regardless of workspace public status
+    // if (!workspace.public)
+    //     return 'Not allowed on private workspaces';
 
     const transactions = await workspace.getTransactions();
 

@@ -18,6 +18,9 @@ export const useEnvStore = defineStore('env', {
         apiRoot: '',
         maxV2DexPairsForTrial: 20,
         nativeTokenAddress: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+
+        verifierAddress1: import.meta.env.VITE_VERIFIER_ADDRESS_1 || '0x7099B1E00D8b9aaEc2A87AaE0b1eA9Be79C8',
+        verifierAddress2: import.meta.env.VITE_VERIFIER_ADDRESS_2 || '0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC',
         chains: {
             ethereum: {
                 slug: 'ethereum',
@@ -66,6 +69,8 @@ export const useEnvStore = defineStore('env', {
 
         isOnMainDomain: (state) => {
             return window.location.host === state.mainDomain;
-        }
+        },
+
+
     }
 });

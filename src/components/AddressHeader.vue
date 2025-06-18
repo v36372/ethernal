@@ -39,6 +39,38 @@
                         </div>
                     </template>
                     <template v-else>
+                        <!-- eVND Balance Display -->
+                        <div v-if="evndBalance && evndBalance !== '0'">
+                            <h4 class="text-uppercase text-caption text-medium-emphasis">
+                                <v-icon color="amber" size="small" class="mr-1">mdi-star</v-icon>
+                                eVND Balance
+                            </h4>
+                            <div class="d-flex align-center">
+                                <span class="evnd-balance-text font-weight-medium">{{ formattedEvndBalance }}</span>
+                                <v-chip 
+                                    color="amber" 
+                                    size="x-small" 
+                                    variant="flat"
+                                    class="ml-2"
+                                >
+                                    eVND
+                                </v-chip>
+                            </div>
+                        </div>
+
+                        <!-- Verification Status -->
+                        <div>
+                            <h4 class="text-uppercase text-caption text-medium-emphasis">Verification Status</h4>
+                            <div class="d-flex align-center">
+                                <VerificationBadge :address="address" size="small" />
+                                <span class="ml-2">
+                                    <span v-if="verificationLoading">Checking...</span>
+                                    <span v-else-if="isVerified" class="text-success font-weight-medium">Verified Entity</span>
+                                    <span v-else class="text-medium-emphasis">Not Verified</span>
+                                </span>
+                            </div>
+                        </div>
+
                         <div>
                             <h4 class="text-uppercase text-caption text-medium-emphasis">Transactions</h4>
                             Latest:
@@ -66,17 +98,35 @@
 </template>
 
 <script setup>
-import { inject } from 'vue';
+import { inject, ref, computed, watch, onMounted } from 'vue';
 import HashLink from './HashLink.vue';
+import VerificationBadge from './VerificationBadge.vue';
 
 import { useCurrentWorkspaceStore } from '../stores/currentWorkspace';
+import { useEvndToken } from '@/composables/useEvndToken';
+import { useVerification } from '@/composables/useVerification';
 
 const currentWorkspaceStore = useCurrentWorkspaceStore();
 
 const dt = inject('$dt');
 const fromWei = inject('$fromWei');
+const server = inject('$server');
 
-defineProps({
+// eVND token composable
+const { hasEvndToken, evndTokenAddress } = useEvndToken();
+
+// Verification composable
+const { hasVerificationContract, isAddressVerified, verifyAddress } = useVerification();
+
+// eVND balance state
+const evndBalance = ref('0');
+const evndTokenData = ref(null);
+
+// Verification state
+const isVerified = ref(false);
+const verificationLoading = ref(false);
+
+const props = defineProps({
     loadingBalance: {
         type: Boolean,
         required: true
@@ -96,6 +146,89 @@ defineProps({
     addressTransactionStats: {
         type: Object,
         default: () => ({})
+    },
+    address: {
+        type: String,
+        required: true
     }
 });
-</script> 
+
+// Computed property for formatted eVND balance
+const formattedEvndBalance = computed(() => {
+    if (!evndBalance.value || evndBalance.value === '0') return '0';
+    if (!evndTokenData.value) return evndBalance.value;
+    
+    return fromWei(
+        evndBalance.value,
+        evndTokenData.value.tokenDecimals || 18,
+        evndTokenData.value.tokenSymbol || 'eVND'
+    );
+});
+
+// Function to fetch eVND balance
+const fetchEvndBalance = async () => {
+    if (!hasEvndToken.value || !props.address) return;
+    
+    try {
+        const response = await server.getTokenBalances(props.address, ['erc20']);
+        const balances = response.data;
+        
+        // Find the eVND token balance
+        const evndTokenBalance = balances.find(balance => 
+            balance.token.toLowerCase() === evndTokenAddress.value
+        );
+        
+        if (evndTokenBalance) {
+            evndBalance.value = evndTokenBalance.currentBalance;
+            evndTokenData.value = evndTokenBalance.tokenContract;
+        } else {
+            evndBalance.value = '0';
+            evndTokenData.value = null;
+        }
+    } catch (error) {
+        console.error('Error fetching eVND balance:', error);
+        evndBalance.value = '0';
+        evndTokenData.value = null;
+    }
+};
+
+// Function to check verification
+const checkVerification = async () => {
+    if (!hasVerificationContract.value || !props.address) return;
+    
+    verificationLoading.value = true;
+    
+    try {
+        const result = await verifyAddress(props.address);
+        isVerified.value = result;
+    } catch (error) {
+        console.error('Error checking verification:', error);
+        isVerified.value = false;
+    } finally {
+        verificationLoading.value = false;
+    }
+};
+
+// Watch for address changes
+watch(() => props.address, () => {
+    fetchEvndBalance();
+    checkVerification();
+}, { immediate: true });
+
+// Fetch on mount
+onMounted(() => {
+    if (hasEvndToken.value) {
+        fetchEvndBalance();
+    }
+    if (hasVerificationContract.value) {
+        checkVerification();
+    }
+});
+</script>
+
+<style scoped>
+.evnd-balance-text {
+    color: #F57C00;
+    font-size: 1.1em;
+}
+</style> 

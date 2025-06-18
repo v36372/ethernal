@@ -18,8 +18,9 @@ module.exports = async job => {
     if (!block)
         return 'Cannot find block';
 
-    if (!block.workspace.public)
-        return 'Not allowed on private workspaces';
+    // Always process blocks regardless of workspace public status
+    // if (!block.workspace.public)
+    //     return 'Not allowed on private workspaces';
 
     if (!block.workspace.explorer)
         return 'Inactive explorer';

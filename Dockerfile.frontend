@@ -30,7 +30,7 @@ ENV VITE_SOKETI_PORT=$VITE_SOKETI_PORT \
     VITE_SENTRY_URL=$VITE_SENTRY_URL \
     VITE_SENTRY_ENABLED=$VITE_SENTRY_ENABLED \
     VITE_VERSION=$VITE_VERSION \
-    VITE_IS_SELF_HOSTED=$VITE_IS_SELF_HOSTED
+    VITE_IS_SELF_HOSTED=$VITE_IS_SELF_HOSTED \
 
 # Install dependencies
 COPY package.json yarn.lock ./
@@ -66,4 +66,4 @@ RUN yarn global add serve
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/ads.txt ./dist/ads.txt
 EXPOSE 8080
-CMD ["serve", "-s", "dist", "-l", "8080"] 
+CMD ["serve", "-s", "dist", "-l", "8080"]

@@ -114,6 +114,12 @@
                     </template>
                 </v-list-item>
 
+                <v-list-item :to="'/evnd-dashboard'" title="eVND Dashboard" :class="{ 'text-primary': route.path === '/evnd-dashboard' }">
+                    <template v-slot:title>
+                        <span class="text-body-1">eVND Dashboard</span>
+                    </template>
+                </v-list-item>
+
                 <!-- Conditional Items -->
                 <v-list-item v-if="explorerStore.isDemo || explorerStore.faucet || (envStore.isAdmin && currentWorkspaceStore.public)" 
                     :to="'/faucet'" title="Faucet" :class="{ 'text-primary': route.path === '/faucet' }">
@@ -310,6 +316,17 @@
                                 :to="'/analytics'" 
                                 :class="`opacity-100 d-flex align-center fill-height ${isHovering || route.path === '/analytics' ? 'text-primary' : 'text-default opacity-80'}`"
                             >Charts</v-btn>
+                        </template>
+                    </v-hover>
+
+                    <v-hover>
+                        <template v-slot:default="{ isHovering, props }">
+                            <v-btn 
+                                variant="plain" 
+                                v-bind="props" 
+                                :to="'/evnd-dashboard'" 
+                                :class="`opacity-100 d-flex align-center fill-height ${isHovering || route.path === '/evnd-dashboard' ? 'text-primary' : 'text-default opacity-80'}`"
+                            >eVND Dashboard</v-btn>
                         </template>
                     </v-hover>
 

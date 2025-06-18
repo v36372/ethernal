@@ -30,8 +30,9 @@ module.exports = async job => {
     if (!workspace)
         return 'Cannot find workspace';
 
-    if (!workspace.public)
-        return 'Not allowed on private workspaces';
+    // Remove public workspace restriction - allow on all workspaces
+    // if (!workspace.public)
+    //     return 'Not allowed on private workspaces';
 
     if (workspace.skipIntegrityCheck)
         return 'Integrity check disabled';
@@ -48,8 +49,9 @@ module.exports = async job => {
     if (workspace.integrityCheckStartBlockNumber === null || workspace.integrityCheckStartBlockNumber === undefined)
         return 'Integrity checks not enabled';
 
-    if (await workspace.explorer.hasReachedTransactionQuota())
-        return 'Transaction quota reached';
+    // Remove transaction quota check - always allow integrity checks
+    // if (await workspace.explorer.hasReachedTransactionQuota())
+    //     return 'Transaction quota reached';
 
     /*
         We don't want to start integrity checks if the sync has never been initiated.

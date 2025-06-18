@@ -28,7 +28,7 @@ start:
 
 stop:
 	@echo "Stopping and cleaning up all containers and networks..."
-	docker compose -f docker-compose.prod.yml down --remove-orphans 
+	docker compose -f docker-compose.prod.yml down --remove-orphans
 
 nuke:
 	@echo "Nuking everything: containers, networks, volumes, and generated env/config files..."

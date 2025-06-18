@@ -35,17 +35,17 @@ for arg in "$@"; do
 done
 
 # Pre-generate all needed random values
-ENCRYPTION_KEY=$(gen_hex 16) # 32 hex chars
-ENCRYPTION_JWT_SECRET=$(gen_hex 32) # 64 hex chars
-BACKEND_SECRET=$(gen_str 32)
-SOKETI_SECRET=$(gen_str 32)
+ENCRYPTION_KEY=Pre-generateallneededrandomvalue
+ENCRYPTION_JWT_SECRET=Pre-generateallneededrandomvaluePre-generateallneededrandomvalue
+BACKEND_SECRET=Pre-generateallneededrandomvalue
+SOKETI_SECRET=Pre-generateallneededrandomvalue
 BULLBOARD_PASSWORD=$(gen_str 16)
-PM2_SECRET=$(gen_str 32)
+PM2_SECRET=Pre-generateallneededrandomvalue
 FIREBASE_SIGNER_KEY=$(openssl rand -base64 64 | sed 's/"/\\"/g')
 FIREBASE_SALT_SEPARATOR=$(openssl rand -base64 16 | sed 's/"/\\"/g')
 POSTGRES_HOST="postgres"
 POSTGRES_USER="postgres"
-POSTGRES_PASSWORD=$(openssl rand -hex 16)
+POSTGRES_PASSWORD="hellworld"
 POSTGRES_DB="ethernal"
 
 # Generate md5-hashed password for PgBouncer (md5 + md5(PASSWORD + USERNAME))

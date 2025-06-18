@@ -79,33 +79,32 @@ module.exports = (sequelize, DataTypes) => {
                 trigger(`private-blocks;workspace=${this.workspaceId}`, 'new', { number: this.number, withTransactions: this.transactionsCount > 0 });
 
             const workspace = await this.getWorkspace();
-            if (workspace.public) {
-                await enqueue('removeStalledBlock', `removeStalledBlock-${this.id}`, { blockId: this.id }, null, null, STALLED_BLOCK_REMOVAL_DELAY);
+            // Always process blocks regardless of workspace public status
+            await enqueue('removeStalledBlock', `removeStalledBlock-${this.id}`, { blockId: this.id }, null, null, STALLED_BLOCK_REMOVAL_DELAY);
 
-                if (workspace.tracing && workspace.tracing != 'hardhat') {
-                    const jobs = [];
-                    const transactions = await this.getTransactions();
-                    for (let i = 0; i < transactions.length; i++) {
-                        const transaction = transactions[i];
-                        jobs.push({
-                            name: `processTransactionTrace-${this.workspaceId}-${transaction.hash}`,
-                            data: { transactionId: transaction.id }
-                        });
-                    }
-                    await bulkEnqueue('processTransactionTrace', jobs);
+            if (workspace.tracing && workspace.tracing != 'hardhat') {
+                const jobs = [];
+                const transactions = await this.getTransactions();
+                for (let i = 0; i < transactions.length; i++) {
+                    const transaction = transactions[i];
+                    jobs.push({
+                        name: `processTransactionTrace-${this.workspaceId}-${transaction.hash}`,
+                        data: { transactionId: transaction.id }
+                    });
                 }
-
-                if (workspace.integrityCheckStartBlockNumber === undefined || workspace.integrityCheckStartBlockNumber === null) {
-                    const integrityCheckStartBlockNumber = this.number < 1000 ? 0 : this.number;
-                    await workspace.update({ integrityCheckStartBlockNumber });
-                }
-
-                if (this.number == workspace.integrityCheckStartBlockNumber) {
-                    await enqueue('integrityCheck', `integrityCheck-${this.workspaceId}`, { workspaceId: this.workspaceId });
-                }
-
-                return enqueue('processBlock', `processBlock-${this.id}`, { blockId: this.id });
+                await bulkEnqueue('processTransactionTrace', jobs);
             }
+
+            if (workspace.integrityCheckStartBlockNumber === undefined || workspace.integrityCheckStartBlockNumber === null) {
+                const integrityCheckStartBlockNumber = this.number < 1000 ? 0 : this.number;
+                await workspace.update({ integrityCheckStartBlockNumber });
+            }
+
+            if (this.number == workspace.integrityCheckStartBlockNumber) {
+                await enqueue('integrityCheck', `integrityCheck-${this.workspaceId}`, { workspaceId: this.workspaceId });
+            }
+
+            return enqueue('processBlock', `processBlock-${this.id}`, { blockId: this.id });
         };
 
         if (options.transaction)

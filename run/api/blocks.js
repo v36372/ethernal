@@ -33,8 +33,9 @@ router.post('/syncRange', authMiddleware, async (req, res, next) => {
             return managedError(new Error('Missing parameter'), req, res);
 
         const workspace = await db.getWorkspaceByName(data.uid, data.workspace);
-        if (!workspace.public)
-            return managedError(new Error(`You are not allowed to use server side sync. If you'd like to, please reach out at contact@tryethernal.com`), req, res);
+        // Remove public workspace restriction - allow server side sync for all workspaces
+        // if (!workspace.public)
+        //     return managedError(new Error(`You are not allowed to use server side sync. If you'd like to, please reach out at contact@tryethernal.com`), req, res);
 
         await enqueue('batchBlockSync', `batchBlockSync-${data.uid}-${data.workspace}-${data.from}-${data.to}`, {
             userId: data.uid,
@@ -93,8 +94,9 @@ router.post('/', [authMiddleware, browserSyncMiddleware], async (req, res, next)
                 All current explorers need to be migrated before using this. 
             */
             // const hasActiveExplorer = workspace.explorer && workspace.explorer.stripeSubscription;
-            if (!workspace.public)
-                return managedError(new Error(`You need to have an active explorer to use server side sync. Go to https://app.${getAppDomain()}/explorers for more info`), req, res);
+            // Remove public workspace restriction for server sync
+            // if (!workspace.public)
+            //     return managedError(new Error(`You need to have an active explorer to use server side sync. Go to https://app.${getAppDomain()}/explorers for more info`), req, res);
 
             if (block.number === undefined || block.number === null)
                 return managedError(new Error('Missing block number.'), req, res);
@@ -107,9 +109,10 @@ router.post('/', [authMiddleware, browserSyncMiddleware], async (req, res, next)
             }, 1);
         }
         else {
-            const canUserSyncBlock = await db.canUserSyncBlock(data.user.id);
-            if (!canUserSyncBlock)
-                return managedError(new Error(`You are on a free plan with more than one workspace. Please upgrade your plan, or delete your extra workspaces here: https://app.${getAppDomain()}/settings.`), req, res);
+            // Remove block sync restrictions - always allow syncing
+            // const canUserSyncBlock = await db.canUserSyncBlock(data.user.id);
+            // if (!canUserSyncBlock)
+            //     return managedError(new Error(`You are on a free plan with more than one workspace. Please upgrade your plan, or delete your extra workspaces here: https://app.${getAppDomain()}/settings.`), req, res);
 
             const syncedBlock = stringifyBns(sanitize(block));
             await db.storeBlock(data.uid, data.workspace, syncedBlock);

@@ -119,11 +119,21 @@
 
           <!-- Token Transfers Section (if any) -->
           <template v-if="transaction.tokenTransferCount && transaction.tokenTransferCount > 0">
-            <v-list-item class="token-transfers-item d-flex flex-column flex-sm-row">
+            <v-list-item class="token-transfers-item d-flex flex-column flex-sm-row" :class="{ 'evnd-token-section': hasEvndTokenTransfer(transaction) }">
               <template v-slot:prepend>
                 <div class="text-subtitle-2 font-weight-medium text-grey-darken-1" style="width: 220px;">
                   <v-icon size="small" color="grey" class="mr-1" v-tooltip="'Tokens transferred in this transaction'">mdi-help-circle-outline</v-icon>
                   Token Transfers ({{ transaction.tokenTransferCount }}):
+                  <v-chip 
+                    v-if="hasEvndTokenTransfer(transaction)" 
+                    color="amber" 
+                    size="x-small" 
+                    variant="flat"
+                    class="ml-2"
+                    prepend-icon="mdi-star"
+                  >
+                    eVND TOKEN
+                  </v-chip>
                 </div>
               </template>
               <v-list-item-title class="text-body-2 token-activity-container">
@@ -408,6 +418,7 @@ import CompactTransactionTokenTransfers from './CompactTransactionTokenTransfers
 import TransactionFunctionCall from './TransactionFunctionCall.vue';
 import ExpandableText from './ExpandableText.vue';
 import AdBanner from './AdBanner.vue';
+import { useEvndToken } from '@/composables/useEvndToken';
 
 const props = defineProps({
   transaction: {
@@ -427,6 +438,9 @@ const $dt = inject('$dt');
 const explorerStore = useExplorerStore();
 const currentWorkspaceStore = useCurrentWorkspaceStore();
 const theme = useTheme();
+
+// Special token composable
+const { hasEvndTokenTransfer } = useEvndToken();
 
 // Cache frequently accessed values
 const cachedGasPrices = new Map();
@@ -533,5 +547,12 @@ const getTxnTypeName = (type) => txTypeNames[type] || 'Unknown';
 .contract-creation :deep(.v-card) {
   background-color: rgb(var(--v-theme-surface));
   color: rgb(var(--v-theme-on-surface));
+}
+
+.evnd-token-section {
+  background: linear-gradient(90deg, rgba(255, 193, 7, 0.08) 0%, rgba(255, 193, 7, 0.03) 100%) !important;
+  border-left: 3px solid #FFC107 !important;
+  border-radius: 4px !important;
+  margin: 4px 0 !important;
 }
 </style>

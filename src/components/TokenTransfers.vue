@@ -19,6 +19,7 @@
         ]"
         item-key="id"
         :items="transfers"
+        :row-props="getRowProps"
         @update:options="updateOptions">
         <template v-if="!withCount" v-slot:[`footer.page-text`]=""></template>
 
@@ -121,15 +122,35 @@
         <!-- Token Column -->
         <template v-slot:item.token="{ item }">
             <div class="d-flex flex-column token-cell" v-if="isERC20(item)">
-                <Hash-Link
-                    :type="'address'"
-                    :xsHash="true"
-                    :hash="item.token"
-                    :withName="true"
-                    :withTokenName="true"
-                    :tokenId="item.tokenId"
-                    :contract="item.contract"
-                />
+                <div class="d-flex align-center">
+                                        <v-icon 
+                        v-if="isEvndTokenTransfer(item)" 
+                        color="amber" 
+                        size="small" 
+                        class="mr-2"
+                        v-tooltip="'eVND Transfer'"
+                    >
+                        mdi-star
+                    </v-icon>
+                    <Hash-Link
+                        :type="'address'"
+                        :xsHash="true"
+                        :hash="item.token"
+                        :withName="true"
+                        :withTokenName="true"
+                        :tokenId="item.tokenId"
+                        :contract="item.contract"
+                    />
+                                        <v-chip 
+                        v-if="isEvndTokenTransfer(item)" 
+                        color="amber" 
+                        size="x-small" 
+                        variant="flat"
+                        class="ml-2"
+                    >
+                        eVND
+                    </v-chip>
+                </div>
                 <span class="text-caption text-medium-emphasis" v-if="item.contract?.tokenName && item.contract?.tokenSymbol">
                     {{ item.contract.tokenSymbol }}
                 </span>
@@ -227,6 +248,7 @@
 import { ref, computed, watch, inject } from 'vue';
 import { formatContractPattern } from '@/lib/utils';
 import HashLink from './HashLink.vue';
+import { useEvndToken } from '@/composables/useEvndToken';
 
 // Component props
 const props = defineProps({
@@ -280,6 +302,9 @@ const tokenMetadata = ref({});
 
 const $server = inject('$server');
 
+// eVND token composable
+const { isEvndTokenTransfer, getEvndTokenHighlightClasses } = useEvndToken();
+
 // Component emits
 const emit = defineEmits(['update:options']);
 
@@ -314,6 +339,13 @@ const getImageTag = (image) => {
         return image;
     }
     return `<img width="50" height="50" src="${image}" />`;
+};
+
+const getRowProps = (item) => {
+    if (isEvndTokenTransfer(item.item)) {
+        return { class: getEvndTokenHighlightClasses() };
+    }
+    return {};
 };
 
 // Methods
@@ -380,4 +412,14 @@ watch(() => props.transfers, (newVal) => {
     top: 0;
     left: 0;
 }
+
+:deep(.evnd-token-highlight) {
+    background: linear-gradient(90deg, rgba(255, 193, 7, 0.1) 0%, rgba(255, 193, 7, 0.05) 100%) !important;
+    border-left: 4px solid #FFC107 !important;
+}
+
+:deep(.evnd-token-highlight):hover {
+    background: linear-gradient(90deg, rgba(255, 193, 7, 0.15) 0%, rgba(255, 193, 7, 0.08) 100%) !important;
+}
+
 </style>

@@ -10,6 +10,7 @@ module.exports = {
     receiptSync: require('./receiptSync'),
     removeStalledBlock: require('./removeStalledBlock'),
     increaseStripeBillingQuota: require('./increaseStripeBillingQuota'),
+    updateEvndTransferFlags: require('./updateEvndTransferFlags'),
 
     // Medium Priority
     processContract: require('./processContract'),
@@ -22,6 +23,7 @@ module.exports = {
     processExplorerV2Dex: require('./processExplorerV2Dex'),
     processExplorerV2DexPair: require('./processExplorerV2DexPair'),
     setupV2DexPoolReserves: require('./setupV2DexPoolReserves'),
+    updateEvndTransferFlags: require('./updateEvndTransferFlags'),
 
     // Low Priority
     processUser: require('./processUser'),

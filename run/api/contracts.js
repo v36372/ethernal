@@ -317,9 +317,10 @@ router.post('/:address', authMiddleware, async (req, res, next) => {
             hashedBytecode: data.hashedBytecode
         });
 
-        const canSyncData = await db.canUserSyncContract(data.uid, data.workspace, req.params.address);
-        if (!canSyncData)
-            return managedError(new Error('Free plan users are limited to 10 synced contracts. Upgrade to our Premium plan to sync more.'), req, res);
+        // Remove contract sync restrictions - always allow syncing
+        // const canSyncData = await db.canUserSyncContract(data.uid, data.workspace, req.params.address);
+        // if (!canSyncData)
+        //     return managedError(new Error('Free plan users are limited to 10 synced contracts. Upgrade to our Premium plan to sync more.'), req, res);
 
         await db.storeContractData(data.uid, data.workspace, req.params.address, sanitizedData);
 

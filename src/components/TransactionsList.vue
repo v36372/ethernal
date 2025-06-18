@@ -90,6 +90,7 @@ import HashLink from './HashLink.vue';
 
 import { useCurrentWorkspaceStore } from '@/stores/currentWorkspace';
 import { getGasPriceFromTransaction } from '@/lib/utils';
+import { useEvndToken } from '@/composables/useEvndToken';
 
 const props = defineProps({
     currentAddress: String,
@@ -104,6 +105,7 @@ const emit = defineEmits(['listUpdated']);
 const currentWorkspaceStore = useCurrentWorkspaceStore();
 const $server = inject('$server');
 const $pusher = inject('$pusher');
+const { hasEvndTokenTransfer, getEvndTokenHighlightClasses } = useEvndToken();
 
 const currentOptions = ref({ page: 1, itemsPerPage: 10, sortBy: [{ key: 'timestamp', order: 'desc' }] });
 const transactions = shallowRef([]);
@@ -148,8 +150,14 @@ const getTransactions = ({ page, itemsPerPage, sortBy }) => {
 };
 
 const rowClasses = (item) => {
-    if (item.state == 'syncing')
-        return 'isSyncing'
+    const classes = [];
+    if (item.state == 'syncing') {
+        classes.push('isSyncing');
+    }
+    if (hasEvndTokenTransfer(item)) {
+        classes.push(getEvndTokenHighlightClasses());
+    }
+    return classes.join(' ');
 };
 
 const getMethodName = (transaction) => {
@@ -241,6 +249,13 @@ onUnmounted(() => {
 :deep(.isSyncing) {
     font-style: italic;
     opacity: 0.7;
+}
+:deep(.evnd-token-highlight) {
+    background: linear-gradient(90deg, rgba(255, 193, 7, 0.1) 0%, rgba(255, 193, 7, 0.05) 100%) !important;
+    border-left: 4px solid #FFC107 !important;
+}
+:deep(.evnd-token-highlight):hover {
+    background: linear-gradient(90deg, rgba(255, 193, 7, 0.15) 0%, rgba(255, 193, 7, 0.08) 100%) !important;
 }
 .methodName {
     display: block;

@@ -50,9 +50,14 @@
             :balance="balance"
             :contract="contract"
             :address-transaction-stats="addressTransactionStats"
+            :address="address"
         />
 
         <BaseChipGroup v-model="activeTab" mandatory>
+            <v-chip label size="small" value="evndtxns" v-if="hasEvndToken">
+                <v-icon class="mr-1" color="amber">mdi-star</v-icon>
+                eVND Transfers
+            </v-chip>
             <v-chip label size="small" value="transactions">
                 Transactions 
                 <template v-if="!loadingStats">({{ totalTransactions }})</template>
@@ -76,6 +81,14 @@
             <v-chip label size="small" value="analytics">Analytics</v-chip>
             <v-chip label size="small" value="assets">Assets</v-chip>
         </BaseChipGroup>
+
+        <div v-if="activeTab === 'evndtxns'">
+            <v-card>
+                <v-card-text>
+                    <Address-Evnd-Transfers :address="address" :key="address" />
+                </v-card-text>
+            </v-card>
+        </div>
 
         <div v-if="activeTab === 'transactions'">
             <v-card>
@@ -138,6 +151,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, onBeforeUnmount, inject } from 'vue';
 import { useCurrentWorkspaceStore } from '../stores/currentWorkspace';
+import { useEvndToken } from '@/composables/useEvndToken';
 
 import { formatNumber } from '../lib/utils';
 
@@ -145,6 +159,7 @@ import BaseChipGroup from './base/BaseChipGroup.vue'
 import AddressHeader from './AddressHeader.vue';
 import AddressTransactionsList from './AddressTransactionsList.vue';
 import AddressTokenTransfers from './AddressTokenTransfers.vue';
+import AddressEvndTransfers from './AddressEvndTransfers.vue';
 import AddressTraceSteps from './AddressTraceSteps.vue';
 import ContractDetails from './ContractDetails.vue';
 import ContractLogs from './ContractLogs.vue';
@@ -160,6 +175,9 @@ const server = inject('$server');
 // Store
 const currentWorkspaceStore = useCurrentWorkspaceStore();
 
+// Special token composable
+const { hasEvndToken } = useEvndToken();
+
 // Reactive state
 const balance = ref(0);
 const loadingBalance = ref(true);
@@ -167,7 +185,7 @@ const loadingContract = ref(true);
 const loadingStats = ref(true);
 const contract = ref(null);
 const addressTransactionStats = ref({});
-const activeTab = ref('transactions');
+const activeTab = ref(hasEvndToken.value ? 'evndtxns' : 'transactions');
 
 const totalTransactions = computed(() => {
     if (!addressTransactionStats.value.sent && !addressTransactionStats.value.received) return 0;
@@ -189,7 +207,7 @@ const patternCount = computed(() => {
 
 const updateTabFromHash = () => {
     const hash = window.location.hash.substring(1);
-    const validTabs = ['transactions', 'internaltx', 'tokentxns', 'interactions', 'events', 'analytics'];
+    const validTabs = ['evndtxns', 'transactions', 'internaltx', 'tokentxns', 'interactions', 'events', 'analytics'];
     
     if (hash.startsWith('asset')) {
         activeTab.value = 'assets';
@@ -200,7 +218,8 @@ const updateTabFromHash = () => {
     } else if (validTabs.includes(hash)) {
         activeTab.value = hash;
     } else {
-        activeTab.value = 'transactions';
+        // Default to eVND transfers if available, otherwise transactions
+        activeTab.value = hasEvndToken.value ? 'evndtxns' : 'transactions';
     }
 };
 
