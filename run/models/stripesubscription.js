@@ -113,6 +113,7 @@ module.exports = (sequelize, DataTypes) => {
       },
       afterCreate(stripeSubscription, options) {
         const afterCreateFn = async () => {
+          console.log(`[DEBUG] StripeSubscription afterCreate - explorerId: ${stripeSubscription.explorerId}, userId: ${stripeSubscription.userId}, stripePlanId: ${stripeSubscription.stripePlanId}, status: ${stripeSubscription.status}`);
           const explorer = await stripeSubscription.getExplorer({ include: ['workspace', 'admin'] });
           if (!explorer || explorer.workspace.qnEndpointId) return;
           const stripePlan = await stripeSubscription.getStripePlan();

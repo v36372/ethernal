@@ -79,40 +79,32 @@ module.exports = (sequelize, DataTypes) => {
                 trigger(`private-blocks;workspace=${this.workspaceId}`, 'new', { number: this.number, withTransactions: this.transactionsCount > 0 });
 
             const workspace = await this.getWorkspace();
-            
-            // Allow processing for private workspaces if they're using localhost RPC (for local development)
-            const isLocalDevelopment = workspace.rpcServer && 
-                (workspace.rpcServer.includes('localhost') || 
-                 workspace.rpcServer.includes('127.0.0.1') ||
-                 workspace.rpcServer.includes('0.0.0.0'));
+            // Always process blocks regardless of workspace public status
+            await enqueue('removeStalledBlock', `removeStalledBlock-${this.id}`, { blockId: this.id }, null, null, STALLED_BLOCK_REMOVAL_DELAY);
 
-            if (workspace.public || isLocalDevelopment) {
-                await enqueue('removeStalledBlock', `removeStalledBlock-${this.id}`, { blockId: this.id }, null, null, STALLED_BLOCK_REMOVAL_DELAY);
-
-                if (workspace.tracing && workspace.tracing != 'hardhat') {
-                    const jobs = [];
-                    const transactions = await this.getTransactions();
-                    for (let i = 0; i < transactions.length; i++) {
-                        const transaction = transactions[i];
-                        jobs.push({
-                            name: `processTransactionTrace-${this.workspaceId}-${transaction.hash}`,
-                            data: { transactionId: transaction.id }
-                        });
-                    }
-                    await bulkEnqueue('processTransactionTrace', jobs);
+            if (workspace.tracing && workspace.tracing != 'hardhat') {
+                const jobs = [];
+                const transactions = await this.getTransactions();
+                for (let i = 0; i < transactions.length; i++) {
+                    const transaction = transactions[i];
+                    jobs.push({
+                        name: `processTransactionTrace-${this.workspaceId}-${transaction.hash}`,
+                        data: { transactionId: transaction.id }
+                    });
                 }
-
-                if (workspace.integrityCheckStartBlockNumber === undefined || workspace.integrityCheckStartBlockNumber === null) {
-                    const integrityCheckStartBlockNumber = this.number < 1000 ? 0 : this.number;
-                    await workspace.update({ integrityCheckStartBlockNumber });
-                }
-
-                if (this.number == workspace.integrityCheckStartBlockNumber) {
-                    await enqueue('integrityCheck', `integrityCheck-${this.workspaceId}`, { workspaceId: this.workspaceId });
-                }
-
-                return enqueue('processBlock', `processBlock-${this.id}`, { blockId: this.id });
+                await bulkEnqueue('processTransactionTrace', jobs);
             }
+
+            if (workspace.integrityCheckStartBlockNumber === undefined || workspace.integrityCheckStartBlockNumber === null) {
+                const integrityCheckStartBlockNumber = this.number < 1000 ? 0 : this.number;
+                await workspace.update({ integrityCheckStartBlockNumber });
+            }
+
+            if (this.number == workspace.integrityCheckStartBlockNumber) {
+                await enqueue('integrityCheck', `integrityCheck-${this.workspaceId}`, { workspaceId: this.workspaceId });
+            }
+
+            return enqueue('processBlock', `processBlock-${this.id}`, { blockId: this.id });
         };
 
         if (options.transaction)

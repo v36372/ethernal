@@ -18,14 +18,9 @@ module.exports = async job => {
     if (!block)
         return 'Cannot find block';
 
-    // Allow processing for private workspaces if they're using localhost RPC (for local development)
-    const isLocalDevelopment = block.workspace.rpcServer && 
-        (block.workspace.rpcServer.includes('localhost') || 
-         block.workspace.rpcServer.includes('127.0.0.1') ||
-         block.workspace.rpcServer.includes('0.0.0.0'));
-
-    if (!block.workspace.public && !isLocalDevelopment)
-        return 'Not allowed on private workspaces (unless local development)';
+    // Always process blocks regardless of workspace public status
+    // if (!block.workspace.public)
+    //     return 'Not allowed on private workspaces';
 
     if (!block.workspace.explorer)
         return 'Inactive explorer';

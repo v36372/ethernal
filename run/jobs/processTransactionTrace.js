@@ -40,14 +40,9 @@ module.exports = async job => {
     if (!transaction)
         return 'Cannot find transaction';
 
-    // Allow processing for private workspaces if they're using localhost RPC (for local development)
-    const isLocalDevelopment = transaction.workspace.rpcServer && 
-        (transaction.workspace.rpcServer.includes('localhost') || 
-         transaction.workspace.rpcServer.includes('127.0.0.1') ||
-         transaction.workspace.rpcServer.includes('0.0.0.0'));
-
-    if (!transaction.workspace.public && !isLocalDevelopment)
-        return 'Not allowed on private workspaces (unless local development)';
+    // Always process transaction traces regardless of workspace public status
+    // if (!transaction.workspace.public)
+    //     return 'Not allowed on private workspaces';
 
     if (!transaction.workspace.explorer)
         return 'Inactive explorer';
@@ -60,6 +55,8 @@ module.exports = async job => {
 
     if (!transaction.workspace.explorer.stripeSubscription && !isLocalDevelopment)
         return 'No active subscription';
+
+    console.log("[DEBUG] processTransactionTrace - Starting processing for transactionId:", data.transactionId);
 
     const tracer = new Tracer(transaction.workspace.rpcServer, db, transaction.workspace.tracing);
     await tracer.process(transaction);

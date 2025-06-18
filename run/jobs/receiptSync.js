@@ -8,8 +8,12 @@ const logger = require('../lib/logger');
 module.exports = async job => {
     const data = job.data;
 
+    console.log(`[DEBUG] receiptSync - Received job data:`, data);
+
     if (!data.transactionHash || !data.workspaceId)
         return 'Missing parameter'
+
+    console.log(`[DEBUG] receiptSync - Processing transactionHash: ${data.transactionHash}, workspaceId: ${data.workspaceId}`);
 
     const include = [
         {
@@ -41,6 +45,8 @@ module.exports = async job => {
         }
     ];
 
+    console.log(`[DEBUG] receiptSync - Starting processing for transactionHash: ${data.transactionHash} in workspaceId: ${data.workspaceId}`);
+
     const transaction = data.transactionId ?
         await Transaction.findByPk(data.transactionId, { include }) :
         await Transaction.findOne({
@@ -51,37 +57,47 @@ module.exports = async job => {
             include
         });
 
+
     if (!transaction)
         return 'Missing transaction';
+
+    console.log(`[DEBUG] receiptSync - Transaction found: ${transaction.hash}, workspaceId: ${transaction.workspaceId}`);
 
     if (transaction.receipt)
         return 'Receipt has already been synced';
 
+    console.log(`[DEBUG] receiptSync - Processing receipt for transaction: ${transaction.hash}`);
+
     if (!transaction.workspace)
         return 'Missing workspace';
 
+    console.log(`[DEBUG] receiptSync - Workspace found: ${transaction.workspace.id}, public: ${transaction.workspace.public}`);
+
     const workspace = transaction.workspace;
 
-    // Allow processing for private workspaces if they're using localhost RPC (for local development)
-    const isLocalDevelopment = workspace.rpcServer && 
-        (workspace.rpcServer.includes('localhost') || 
-         workspace.rpcServer.includes('127.0.0.1') ||
-         workspace.rpcServer.includes('0.0.0.0'));
-
-    if (!workspace.public && !isLocalDevelopment)
-        return 'Cannot sync on private workspace (unless local development)';
+    // Always sync receipts regardless of workspace public status
+    // if (!workspace.public)
+    //     return 'Cannot sync on private workspace';
 
     if (!workspace.explorer)
         return 'Inactive explorer';
 
+    console.log(`[DEBUG] receiptSync - Explorer found: ${workspace.explorer.id}, shouldSync: ${workspace.explorer.shouldSync}`);
+
     if (!workspace.explorer.shouldSync)
         return 'Disabled sync';
+
+    console.log(`[DEBUG] receiptSync - RPC server: ${workspace.rpcServer}`);
 
     if (workspace.rpcHealthCheck && workspace.rpcHealthCheckEnabled && !workspace.rpcHealthCheck.isReachable)
         return 'RPC is unreachable';
 
-    if (!workspace.explorer.stripeSubscription && !isLocalDevelopment)
+    console.log(`[DEBUG] receiptSync - RPC health check enabled: ${workspace.rpcHealthCheckEnabled}, isReachable: ${workspace.rpcHealthCheck ? workspace.rpcHealthCheck.isReachable : 'N/A'}`);
+
+    if (!workspace.explorer.stripeSubscription)
         return 'No active subscription';
+
+    console.log(`[DEBUG] receiptSync - Active subscription found: ${workspace.explorer.stripeSubscription.id}`);
 
     let limiter;
     if (data.rateLimited && workspace.rateLimitInterval && workspace.rateLimitMaxInInterval)
@@ -130,5 +146,5 @@ module.exports = async job => {
         logger.error(error.message, { location: 'jobs.receiptSync', error, data });
         // await db.incrementFailedAttempts(transaction.workspace.id);
         throw error;
-    } 
+    }
 };

@@ -119,33 +119,29 @@ module.exports = (sequelize, DataTypes) => {
             ]
         });
 
-        // Check if this is a local development environment
-        const isLocalDevelopment = transaction.workspace.rpcServer && 
-            (transaction.workspace.rpcServer.includes('localhost') || 
-             transaction.workspace.rpcServer.includes('127.0.0.1') ||
-             transaction.workspace.rpcServer.includes('0.0.0.0'));
 
-        if (transaction.workspace.public || isLocalDevelopment) {
-            options.transaction.afterCommit(() => {
-                return enqueue('processTokenTransfer',
-                    `processTokenTransfer-${this.workspaceId}-${this.token}-${this.id}`, {
-                        tokenTransferId: this.id
-                    }
-                );
-            });
+        console.log(`[DEBUG] TokenTransfer afterCreate: ${this.id} - ${this.token} - ${this.amount} - ${transaction.blockNumber} - ${transaction.hash}`);
 
-            if (this.tokenId)
-                await enqueue('reloadErc721Token',
-                    `reloadErc721Token-${this.workspaceId}-${this.token}-${this.tokenId}`, {
-                        workspaceId: this.workspaceId,
-                        address: this.token,
-                        tokenId: this.tokenId
-                    }
-                );
-        }
+        // Always process token transfers regardless of workspace public status
+        options.transaction.afterCommit(() => {
+            return enqueue('processTokenTransfer',
+                `processTokenTransfer-${this.workspaceId}-${this.token}-${this.id}`, {
+                    tokenTransferId: this.id
+                }
+            );
+        });
 
-        if (!transaction.workspace.public)
-            trigger(`private-processableTransactions;workspace=${transaction.workspace.id}`, 'new', transaction.toJSON());
+        if (this.tokenId)
+            await enqueue('reloadErc721Token',
+                `reloadErc721Token-${this.workspaceId}-${this.token}-${this.tokenId}`, {
+                    workspaceId: this.workspaceId,
+                    address: this.token,
+                    tokenId: this.tokenId
+                }
+            );
+
+        // Always trigger processable transactions regardless of workspace public status
+        trigger(`private-processableTransactions;workspace=${transaction.workspace.id}`, 'new', transaction.toJSON());
     }
   }
   TokenTransfer.init({

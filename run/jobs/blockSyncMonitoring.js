@@ -9,18 +9,19 @@ module.exports = async () => {
     const explorers = await Explorer.findAll({
         where: {
             shouldSync: true,
-            '$stripeSubscription.status$': 'active',
-            '$stripeSubscription.stripePlan.slug$': { [Sequelize.Op.not]: 'demo' },
+            // Remove subscription and demo plan restrictions
+            // '$stripeSubscription.status$': 'active',
+            // '$stripeSubscription.stripePlan.slug$': { [Sequelize.Op.not]: 'demo' },
         },
         include: [
-            {
-                model: StripeSubscription,
-                as: 'stripeSubscription',
-                include: {
-                    model: StripePlan,
-                    as: 'stripePlan'
-                }
-            },
+            // {
+            //     model: StripeSubscription,
+            //     as: 'stripeSubscription',
+            //     include: {
+            //         model: StripePlan,
+            //         as: 'stripePlan'
+            //     }
+            // },
             {
                 model: Workspace,
                 as: 'workspace',
@@ -33,8 +34,9 @@ module.exports = async () => {
         if (explorer.workspace.rpcHealthCheck && !explorer.workspace.rpcHealthCheck.isReachable)
             continue;
 
-        if (await explorer.hasReachedTransactionQuota())
-            continue;
+        // Remove transaction quota check - always allow syncing
+        // if (await explorer.hasReachedTransactionQuota())
+        //     continue;
 
         const [latestLocalBlock] = await explorer.workspace.getBlocks({
             order: [['number', 'DESC']],

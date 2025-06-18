@@ -79,6 +79,10 @@ const getProvider = function(url) {
     if (providers[url])
         return providers[url];
 
+    if (url == 'http://127.0.0.1:8545') {
+      url = 'http://host.docker.internal:8545'; // for docker compatibility"
+    }
+
     const rpcServer = new URL(url);
 
     let provider;
@@ -158,7 +162,9 @@ class WalletConnector {
 
 class ProviderConnector {
     constructor(server, limiter) {
-        if (!server) throw '[ProviderConnector] Missing server parameter';
+        if (!server || server == 'http://127.0.0.1:8545') {
+          server = "http://host.docker.internal:8545"; // for docker compatibility"
+        }
         this.provider = getProvider(server);
         this.limiter = limiter;
     }
@@ -444,9 +450,13 @@ class ContractConnector {
 
     async totalSupply() {
         try {
+            console.log(`[DEBUG] ContractConnector.totalSupply - Fetching totalSupply for contract ${this.address}`);
             this._totalSupply = await withTimeout(this.contract.totalSupply());
-            return this._totalSupply.toString();
+            const result = this._totalSupply.toString();
+            console.log(`[DEBUG] ContractConnector.totalSupply - totalSupply result for ${this.address}: ${result}`);
+            return result;
         } catch(error) {
+            console.log(`[DEBUG] ContractConnector.totalSupply - Error fetching totalSupply for ${this.address}:`, error.message);
             return null;
         }
     }

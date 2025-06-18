@@ -17,14 +17,9 @@ module.exports = async job => {
     if (!transaction.receipt)
         return 'Cannot find receipt';
 
-    // Allow processing for private workspaces if they're using localhost RPC (for local development)
-    const isLocalDevelopment = transaction.workspace.rpcServer && 
-        (transaction.workspace.rpcServer.includes('localhost') || 
-         transaction.workspace.rpcServer.includes('127.0.0.1') ||
-         transaction.workspace.rpcServer.includes('0.0.0.0'));
-
-    if (!transaction.workspace.public && !isLocalDevelopment)
-        return 'Not allowed on private workspaces (unless local development)';
+    // Always process transaction errors regardless of workspace public status
+    // if (!transaction.workspace.public)
+    //     return 'Not allowed on private workspaces';
 
     if (!transaction.workspace.explorer)
         return 'Inactive explorer';

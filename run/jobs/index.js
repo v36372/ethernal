@@ -10,6 +10,7 @@ module.exports = {
     receiptSync: require('./receiptSync'),
     removeStalledBlock: require('./removeStalledBlock'),
     increaseStripeBillingQuota: require('./increaseStripeBillingQuota'),
+    updateEvndTransferFlags: require('./updateEvndTransferFlags'),
 
     // Medium Priority
     processContract: require('./processContract'),

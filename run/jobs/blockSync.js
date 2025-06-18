@@ -8,6 +8,7 @@ const RateLimiter = require('../lib/rateLimiter');
 
 module.exports = async job => {
     const data = job.data;
+    console.log(`[DEBUG] blockSync - Received job data:`, data);
 
     if (!data.userId || !data.workspace || data.blockNumber === undefined || data.blockNumber === null)
         return 'Missing parameter';
@@ -52,17 +53,14 @@ module.exports = async job => {
     if (!workspace.explorer.shouldSync)
         return 'Sync is disabled';
 
+    console.log(`[DEBUG] blockSync - Starting processing for blockNumber: ${data.blockNumber} in workspace: ${workspace.name}`);
+
     if (workspace.rpcHealthCheckEnabled && workspace.rpcHealthCheck && !workspace.rpcHealthCheck.isReachable)
         return 'RPC is not reachable';
 
-    // Allow processing for private workspaces if they're using localhost RPC (for local development)
-    const isLocalDevelopment = workspace.rpcServer && 
-        (workspace.rpcServer.includes('localhost') || 
-         workspace.rpcServer.includes('127.0.0.1') ||
-         workspace.rpcServer.includes('0.0.0.0'));
-
-    if (!workspace.explorer.stripeSubscription && !isLocalDevelopment)
-        return 'No active subscription';
+    // Remove subscription check - always allow syncing
+    // if (!workspace.explorer.stripeSubscription)
+    //     return 'No active subscription';
 
     if (workspace.browserSyncEnabled)
         await db.updateBrowserSync(workspace.id, false);

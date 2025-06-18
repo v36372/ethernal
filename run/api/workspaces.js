@@ -110,18 +110,16 @@ router.post('/', authMiddleware, async (req, res, next) => {
             return managedError(new Error('Could not find user.'), req, res);
 
         let networkId;
-        if (data.workspaceData.public) {
-            const provider = new ProviderConnector(data.workspaceData.rpcServer);
-            try {
-                networkId = await withTimeout(provider.fetchNetworkId());
-            } catch(error) {
-                return managedError(new Error(`Our servers can't query this rpc, please use a rpc that is reachable from the internet.`), req, res);
+        // Always try to fetch networkId from RPC, fallback to provided value
+        const provider = new ProviderConnector(data.workspaceData.rpcServer);
+        try {
+            networkId = await withTimeout(provider.fetchNetworkId());
+        } catch(error) {
+            // If RPC fetch fails, use provided networkId as fallback
+            networkId = data.workspaceData.networkId;
+            if (!networkId) {
+                return managedError(new Error(`Could not determine network ID and none provided.`), req, res);
             }
-            if (!networkId)
-                return managedError(new Error(`Our servers can't query this rpc, please use a rpc that is reachable from the internet.`), req, res);
-        }
-        else {
-            networkId = data.workspaceData.networkId
         }
 
         const filteredWorkspaceData = stringifyBns(sanitize({
@@ -158,13 +156,15 @@ router.post('/settings', authMiddleware, async (req, res, next) => {
             return managedError(new Error('Missing parameter.'), req, res);
 
         const workspace = await db.getWorkspaceByName(data.uid, data.workspace);
-        if (workspace.public && data.settings.rpcServer != workspace.rpcServer) {
+        // Always validate and update RPC settings when changed
+        if (data.settings.rpcServer != workspace.rpcServer) {
             const provider = new ProviderConnector(data.settings.rpcServer);
             try {
                 const networkId = await withTimeout(provider.fetchNetworkId());
                 data.settings.networkId = networkId;
             } catch(error) {
-                return managedError(new Error(`Our servers can't query this rpc, please use a rpc that is reachable from the internet.`), req, res);
+                // Allow RPC change even if we can't validate it
+                console.warn(`Warning: Could not validate RPC server ${data.settings.rpcServer}:`, error.message);
             }
             if (workspace.explorer && workspace.explorer.shouldSync) {
                 const pm2 = new PM2(getPm2Host(), getPm2Secret());

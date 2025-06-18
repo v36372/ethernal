@@ -2,22 +2,19 @@
     <v-card class="flex-grow-1">
         <v-card-text v-if="syncStatus">
             <v-alert v-if="errorMessage" density="compact" text type="error">{{ errorMessage }}</v-alert>
-            <div v-if="explorer.stripeSubscription">
+            <!-- Remove subscription checks - always show sync controls -->
+            <div>
                 <b class="text-success" v-if="isSyncActive">Your explorer is synchronizing blocks.</b>
                 <b class="text-error" v-else-if="isSyncStopped">
                     Your explorer is not synchronizing blocks.
                     <span v-if="isRpcUnreachable"> RPC is unreachable.</span>
-                    <span v-if="hasReachedTransactionQuota"> Transaction quota reached, upgrade your plan to resume sync.</span>
                 </b>
                 <b class="text-warning" v-else-if="isSyncStarting">Starting synchronization...</b>
                 <b class="text-warning" v-else-if="isSyncStopping">Stopping synchronization...</b>
                 <b class="text-error" v-else>Unknown synchronization status ({{ syncStatus }}).</b>
             </div>
-            <div v-else>
-                <b class="text-error">Synchronization will become available once a subscription has been started.</b>
-            </div>
-            <v-btn v-if="isSyncActive && explorer.stripeSubscription" :loading="loading" class="mt-2" color="primary" @click="stopSync()">Stop Sync</v-btn>
-            <v-btn v-else :loading="loading" :disabled="!explorer.stripeSubscription" class="mt-2" color="primary" @click="startSync()">Start Sync</v-btn>
+            <v-btn v-if="isSyncActive" :loading="loading" class="mt-2" color="primary" @click="stopSync()">Stop Sync</v-btn>
+            <v-btn v-else :loading="loading" class="mt-2" color="primary" @click="startSync()">Start Sync</v-btn>
         </v-card-text>
         <v-card-text v-else>
             <v-skeleton-loader type="list-item-three-line"></v-skeleton-loader>
@@ -78,11 +75,12 @@ export default {
             this.$server.getExplorerSyncStatus(this.explorer.id)
                 .then(({ data: { status }}) => {
                     this.syncStatus = status;
-                    if (this.hasReachedTransactionQuota) {
-                        this.loading = false;
-                        this.errorMessage = null;
-                    }
-                    else if (status != newStatus && newStatus == 'online') {
+                    // Remove transaction quota check from sync status
+                    // if (this.hasReachedTransactionQuota) {
+                    //     this.loading = false;
+                    //     this.errorMessage = null;
+                    // }
+                    if (status != newStatus && newStatus == 'online') {
                         if (this.isRpcUnreachable) this.loading = false;
                         else this.timeout = setTimeout(() => this.waitForStatus(newStatus), 1000);
                     }
@@ -104,7 +102,7 @@ export default {
         isSyncActive() { return this.syncStatus == 'online' },
         isSyncStarting() { return this.syncStatus == 'launching' },
         isSyncStopping() { return this.syncStatus == 'stopping' },
-        isSyncStopped() { return this.syncStatus == 'stopped' || this.syncStatus == 'unreachable' || this.syncStatus == 'transactionQuotaReached' },
+        isSyncStopped() { return this.syncStatus == 'stopped' || this.syncStatus == 'unreachable' },
         isRpcUnreachable() { return this.syncStatus == 'unreachable' },
         hasReachedTransactionQuota() { return this.syncStatus == 'transactionQuotaReached' }
     }

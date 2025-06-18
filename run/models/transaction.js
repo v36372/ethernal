@@ -230,6 +230,7 @@ module.exports = (sequelize, DataTypes) => {
             }
 
             const tokenTransfers = [];
+            console.log(`[DEBUG] Processing ${storedLogs.length} transaction logs for token transfers`);
             for (let i = 0; i < storedLogs.length; i++) {
                 const log = storedLogs[i];
                 const tokenTransfer = getTokenTransfer(log);

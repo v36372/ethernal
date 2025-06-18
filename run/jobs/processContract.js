@@ -11,38 +11,62 @@ const logger = require('../lib/logger');
 const { trigger } = require('../lib/pusher');
 
 const findPatterns = async (rpcServer, contractAddress, abi) => {
+    console.log(`[DEBUG] findPatterns - Starting pattern detection for contract: ${contractAddress}`);
     let tokenData = { patterns: [] };
     const contract = new ContractConnector(rpcServer, contractAddress, abi);
+
+    console.log(`[DEBUG] findPatterns - Checking token types for ${contractAddress} at ${rpcServer}`);
     const isErc20 = await contract.isErc20();
     const isErc721 = await contract.isErc721();
     const isErc1155 = await contract.isErc1155();
 
+    console.log(`[DEBUG] findPatterns - Token types detected: ERC20=${isErc20}, ERC721=${isErc721}, ERC1155=${isErc1155}`);
+
     if (isErc20 || isErc721 || isErc1155) {
+        console.log(`[DEBUG] findPatterns - Fetching token data for ${contractAddress}`);
+
+        const decimals = await contract.decimals();
+        const symbol = await contract.symbol();
+        const name = await contract.name();
+        const totalSupply = await contract.totalSupply();
+
+        console.log(`[DEBUG] findPatterns - Token data fetched: decimals=${decimals}, symbol=${symbol}, name=${name}, totalSupply=${totalSupply}`);
+
         tokenData = sanitize({
             ...tokenData,
-            tokenDecimals: await contract.decimals(),
-            tokenSymbol: await contract.symbol(),
-            tokenName: await contract.name(),
-            tokenTotalSupply: await contract.totalSupply(),
+            tokenDecimals: decimals,
+            tokenSymbol: symbol,
+            tokenName: name,
+            tokenTotalSupply: totalSupply,
         });
 
         if (isErc20) tokenData.patterns.push('erc20');
         if (isErc721) tokenData.patterns.push('erc721');
         if (isErc1155) tokenData.patterns.push('erc1155');
 
+        console.log(`[DEBUG] findPatterns - Patterns added: ${tokenData.patterns.join(', ')}`);
+
         const isProxy = await contract.isProxy();
-        if (isProxy)
+        if (isProxy) {
+            console.log(`[DEBUG] findPatterns - Proxy pattern detected for ${contractAddress}`);
             tokenData.patterns.push('proxy');
+        }
+    } else {
+        console.log(`[DEBUG] findPatterns - No token patterns detected for ${contractAddress}`);
     }
 
     if (isErc721) {
+        console.log(`[DEBUG] findPatterns - Processing ERC721 metadata for ${contractAddress}`);
         const erc721Connector = new ERC721Connector(rpcServer, contractAddress, abi);
         const has721Metadata = await erc721Connector.hasMetadata();
         const has721Enumerable = await erc721Connector.isEnumerable();
 
+        console.log(`[DEBUG] findPatterns - ERC721 features: metadata=${has721Metadata}, enumerable=${has721Enumerable}`);
+
         tokenData = sanitize({ ...tokenData, has721Metadata, has721Enumerable });
     }
 
+    console.log(`[DEBUG] findPatterns - Final token data for ${contractAddress}:`, JSON.stringify(tokenData, null, 2));
     return tokenData;
 };
 
@@ -167,18 +191,9 @@ module.exports = async job => {
 
     let asm, bytecode, hashedBytecode;
 
-    // Allow bytecode fetching for private workspaces if they're using localhost RPC (for local development)
-    const isLocalDevelopmentForBytecode = workspace.rpcServer && 
-        (workspace.rpcServer.includes('localhost') || 
-         workspace.rpcServer.includes('127.0.0.1') ||
-         workspace.rpcServer.includes('0.0.0.0'));
-
-    if (workspace.public || isLocalDevelopmentForBytecode) {
-        const connector = new ContractConnector(workspace.rpcServer, contract.address, []);
-        bytecode = await connector.getBytecode();
-    }
-    else
-        bytecode = contract.bytecode;
+    // Always fetch bytecode from RPC if available, otherwise use stored bytecode
+    const connector = new ContractConnector(workspace.rpcServer, contract.address, []);
+    bytecode = await connector.getBytecode() || contract.bytecode;
 
     if (bytecode == '0x')
         return contract.safeDestroy();
@@ -206,13 +221,11 @@ module.exports = async job => {
         scannerMetadata = {};
 
     const abi = contract.abi || scannerMetadata.abi;
-    // Allow pattern detection for private workspaces if they're using localhost RPC (for local development)
-    const isLocalDevelopment = workspace.rpcServer && 
-        (workspace.rpcServer.includes('localhost') || 
-         workspace.rpcServer.includes('127.0.0.1') ||
-         workspace.rpcServer.includes('0.0.0.0'));
+    console.log(`[DEBUG] processContract - Contract ${contract.address} workspace public: ${workspace.public}`);
 
-    const tokenData = (workspace.public || isLocalDevelopment) ? await findPatterns(workspace.rpcServer, contract.address, abi) : {};
+    // Always process token data regardless of workspace public status
+    const tokenData = await findPatterns(workspace.rpcServer, contract.address, abi);
+    console.log(`[DEBUG] processContract - Token data processing result for ${contract.address}:`, JSON.stringify(tokenData, null, 2));
 
     let metadata = sanitize({
         bytecode, hashedBytecode, asm, abi,
@@ -220,6 +233,8 @@ module.exports = async job => {
         proxy: scannerMetadata.proxy,
         ...tokenData
     });
+
+    console.log(`[DEBUG] processContract - Final metadata for ${contract.address}:`, JSON.stringify(metadata, null, 2));
 
     if (metadata.proxy)
         await db.storeContractData(user.firebaseUserId, workspace.name, metadata.proxy, { address: metadata.proxy });
@@ -235,7 +250,9 @@ module.exports = async job => {
         }
     }
 
+    console.log(`[DEBUG] processContract - Storing contract data for ${contract.address} with metadata:`, JSON.stringify(metadata, null, 2));
     await db.storeContractData(user.firebaseUserId, workspace.name, contract.address, metadata);
+    console.log(`[DEBUG] processContract - Successfully stored contract data for ${contract.address}`);
 
     return trigger(`private-contracts;workspace=${contract.workspaceId};address=${contract.address}`, 'updated', null);
 };

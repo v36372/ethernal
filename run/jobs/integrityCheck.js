@@ -30,14 +30,9 @@ module.exports = async job => {
     if (!workspace)
         return 'Cannot find workspace';
 
-    // Allow processing for private workspaces if they're using localhost RPC (for local development)
-    const isLocalDevelopment = workspace.rpcServer && 
-        (workspace.rpcServer.includes('localhost') || 
-         workspace.rpcServer.includes('127.0.0.1') ||
-         workspace.rpcServer.includes('0.0.0.0'));
-
-    if (!workspace.public && !isLocalDevelopment)
-        return 'Not allowed on private workspaces (unless local development)';
+    // Remove public workspace restriction - allow on all workspaces
+    // if (!workspace.public)
+    //     return 'Not allowed on private workspaces';
 
     if (workspace.skipIntegrityCheck)
         return 'Integrity check disabled';
@@ -54,8 +49,9 @@ module.exports = async job => {
     if (workspace.integrityCheckStartBlockNumber === null || workspace.integrityCheckStartBlockNumber === undefined)
         return 'Integrity checks not enabled';
 
-    if (await workspace.explorer.hasReachedTransactionQuota())
-        return 'Transaction quota reached';
+    // Remove transaction quota check - always allow integrity checks
+    // if (await workspace.explorer.hasReachedTransactionQuota())
+    //     return 'Transaction quota reached';
 
     /*
         We don't want to start integrity checks if the sync has never been initiated.
