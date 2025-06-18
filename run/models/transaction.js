@@ -243,6 +243,29 @@ module.exports = (sequelize, DataTypes) => {
                     }));
             }
 
+            // Check if transaction is directly to eVND token contract (regardless of token transfers)
+            const evndContract = await sequelize.models.EvndContract.findOne({
+                where: {
+                    workspaceId: this.workspaceId,
+                    contractType: 'evnd_token',
+                    isActive: true
+                }
+            });
+
+            let isEvndTransaction = false;
+
+            if (evndContract) {
+                console.log(`[DEBUG] eVND Contract found: ${evndContract.address} for workspace ${this.workspaceId}`);
+                
+                // Check if transaction is directly to eVND token contract
+                if (this.to && this.to.toLowerCase() === evndContract.address.toLowerCase()) {
+                    console.log(`[DEBUG] Transaction ${this.hash} is directly to eVND token contract`);
+                    isEvndTransaction = true;
+                }
+            } else {
+                console.log(`[DEBUG] No eVND contract found for workspace ${this.workspaceId}`);
+            }
+
             if (tokenTransfers.length > 0) {
                 const storedTokenTransfers = await sequelize.models.TokenTransfer.bulkCreate(tokenTransfers, {
                     ignoreDuplicates: true,
@@ -253,21 +276,17 @@ module.exports = (sequelize, DataTypes) => {
                     trigger(`private-contractLog;workspace=${this.workspaceId};contract=${tokenTransfers[i].address}`, 'new', null);
 
                 // Check if any token transfer involves eVND token
-                const evndContract = await sequelize.models.EvndContract.findOne({
-                    where: {
-                        workspaceId: this.workspaceId,
-                        contractType: 'evnd_token',
-                        isActive: true
-                    }
-                });
-
                 if (evndContract) {
                     const hasEvndTransfer = tokenTransfers.some(transfer => 
                         transfer.token && transfer.token.toLowerCase() === evndContract.address.toLowerCase()
                     );
 
                     if (hasEvndTransfer) {
-                        await this.update({ isEvndTransfer: true }, { transaction });
+                        console.log(`[DEBUG] eVND token transfer detected in transaction ${this.hash}`);
+                        isEvndTransaction = true;
+                    } else {
+                        console.log(`[DEBUG] No eVND token transfers found in transaction ${this.hash}`);
+                        console.log(`[DEBUG] Token transfers: ${tokenTransfers.map(t => t.token).join(', ')}`);
                     }
                 }
 
@@ -309,6 +328,12 @@ module.exports = (sequelize, DataTypes) => {
                         ignoreDuplicates: true,
                         transaction
                     });
+            }
+
+            // Update isEvndTransfer flag if this is an eVND-related transaction
+            if (isEvndTransaction) {
+                console.log(`[DEBUG] Marking transaction ${this.hash} as eVND transfer`);
+                await this.update({ isEvndTransfer: true }, { transaction });
             }
 
             await storedReceipt.insertAnalyticEvent(transaction);

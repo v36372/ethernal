@@ -9,9 +9,10 @@ const ERC721_METADATA_ABI = require('../abis/erc721Metadata.json');
 const IUniswapV2Router02 = require('../abis/IUniswapV2Router02');
 
 const getProvider = function(url) {
-    if (url == 'http://127.0.0.1:8545') {
-      url = 'http://host.docker.internal:8545'; // for docker compatibility"
-    }
+    // Removed automatic conversion to host.docker.internal for better CORS compatibility
+    // if (url == 'http://127.0.0.1:8545') {
+    //   url = 'http://host.docker.internal:8545'; // for docker compatibility"
+    // }
 
     const rpcServer = new URL(url);
 

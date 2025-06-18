@@ -162,8 +162,12 @@ class WalletConnector {
 
 class ProviderConnector {
     constructor(server, limiter) {
-        if (!server || server == 'http://127.0.0.1:8545') {
-          server = "http://host.docker.internal:8545"; // for docker compatibility"
+        // Removed automatic conversion to host.docker.internal for better CORS compatibility
+        // if (!server || server == 'http://127.0.0.1:8545') {
+        //   server = "http://host.docker.internal:8545"; // for docker compatibility"
+        // }
+        if (!server) {
+            throw new Error('Missing server parameter');
         }
         this.provider = getProvider(server);
         this.limiter = limiter;

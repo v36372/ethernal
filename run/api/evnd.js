@@ -191,16 +191,19 @@ router.get('/dashboard', workspaceAuthMiddleware, async (req, res, next) => {
                 address;
         };
 
-        // Format system components
-        const systemComponents = contracts.reduce((acc, contract) => {
-            acc[contract.contractType] = {
-                name: contract.name,
-                icon: contract.icon,
-                address: formatAddress(contract.address),
-                fullAddress: contract.address
-            };
-            return acc;
-        }, {});
+        // Format system components - only show essential contracts for dashboard
+        const allowedContractTypes = ['evnd_token', 'exchange_portal', 'entity_registry', 'compliance_registry', 'musd', 'address_restriction_compliance', 'verification_compliance'];
+        const systemComponents = contracts
+            .filter(contract => allowedContractTypes.includes(contract.contractType))
+            .reduce((acc, contract) => {
+                acc[contract.contractType] = {
+                    name: contract.name,
+                    icon: contract.icon,
+                    address: formatAddress(contract.address),
+                    fullAddress: contract.address
+                };
+                return acc;
+            }, {});
 
         // Fetch total supply from blockchain if eVND token contract exists
         let totalSupply = systemMetrics.totalEvndSupply || 0;
@@ -251,26 +254,35 @@ router.get('/dashboard', workspaceAuthMiddleware, async (req, res, next) => {
             }
         };
 
+        // Create verifiers section using actual verifier contract addresses
+        const verifier1 = contracts.find(c => c.contractType === 'verifier_1');
+        const verifier2 = contracts.find(c => c.contractType === 'verifier_2');
+        
+        const verifiers = [];
+        if (verifier1) {
+            verifiers.push({
+                address: formatAddress(verifier1.address),
+                fullAddress: verifier1.address,
+                name: 'Ministry of Finance',
+                status: 'Active',
+                isActive: true
+            });
+        }
+        if (verifier2) {
+            verifiers.push({
+                address: formatAddress(verifier2.address),
+                fullAddress: verifier2.address,
+                name: 'State Bank Vietnam',
+                status: 'Active',
+                isActive: true
+            });
+        }
+
         const dashboardData = {
             systemStatus: 'VIETNAM e-VND CBDC SYSTEM STATUS',
             systemComponents,
             systemMetrics: formattedSystemMetrics,
-            verifiers: [
-                {
-                    address: '0x7099...79C8',
-                    fullAddress: '0x7099B1E00D8b9aaEc2A87AaE0b1eA9Be79C8',
-                    name: 'Ministry of Finance',
-                    status: 'Active',
-                    isActive: true
-                },
-                {
-                    address: '0x3C44...93BC',
-                    fullAddress: '0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC',
-                    name: 'State Bank Vietnam',
-                    status: 'Active',
-                    isActive: true
-                }
-            ],
+            verifiers,
             exchangePortalStatus: {
                 currentRates: {
                     usdToVnd: systemMetrics.usdToVndRate || 24000,
