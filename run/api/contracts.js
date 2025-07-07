@@ -16,6 +16,80 @@ router.get('/:address/holderHistory', workspaceAuthMiddleware, holderHistory);
 router.get('/:address/circulatingSupply', workspaceAuthMiddleware, circulatingSupply);
 router.get('/:address/holders', workspaceAuthMiddleware, holders);
 router.get('/:address/transfers', workspaceAuthMiddleware, transfers);
+router.get('/:address/evnd-transfers', workspaceAuthMiddleware, async (req, res, next) => {
+    try {
+        const { address } = req.params;
+        const { page = 1, itemsPerPage = 10, orderBy = 'blockNumber', order = 'DESC' } = req.query;
+        const workspaceId = req.query.workspace.id;
+
+        if (!address) {
+            return res.status(400).json({ error: 'Address is required' });
+        }
+
+        // First, check if the requested address is the eVND token
+        const { EvndContract, TokenTransfer, Transaction, Contract, sequelize } = require('../models');
+        const { Op } = require('sequelize');
+
+        const evndContract = await EvndContract.findOne({
+            where: {
+                workspaceId,
+                contractType: 'evnd_token',
+                isActive: true
+            }
+        });
+
+        if (!evndContract) {
+            return res.status(200).json({
+                items: [],
+                total: 0
+            });
+        }
+
+        // Only return eVND transfers if the requested address is the eVND token
+        if (address.toLowerCase() !== evndContract.address.toLowerCase()) {
+            return res.status(200).json({
+                items: [],
+                total: 0
+            });
+        }
+
+        console.log(`[DEBUG] Looking for eVND transfers for token ${address}, eVND token: ${evndContract.address}`);
+
+        // Get all token transfers for the eVND token
+        const { rows: tokenTransfers, count } = await TokenTransfer.findAndCountAll({
+            where: {
+                workspaceId,
+                token: evndContract.address.toLowerCase()
+            },
+            include: [
+                {
+                    model: Transaction,
+                    as: 'transaction',
+                    attributes: ['hash', 'blockNumber', 'timestamp', 'methodDetails', 'data']
+                },
+                {
+                    model: Contract,
+                    as: 'contract',
+                    attributes: ['id', 'patterns', 'tokenName', 'tokenSymbol', 'tokenDecimals', 'abi']
+                }
+            ],
+            attributes: ['id', 'src', 'dst', 'token', 'tokenId', [sequelize.cast(sequelize.col('"TokenTransfer".amount'), 'numeric'), 'amount']],
+            offset: (page - 1) * itemsPerPage,
+            limit: itemsPerPage,
+            order: [[{ model: Transaction, as: 'transaction' }, orderBy, order]]
+        });
+
+        console.log(`[DEBUG] Found ${tokenTransfers.length} eVND token transfers`);
+
+        res.status(200).json({
+            items: tokenTransfers.map(transfer => transfer.toJSON()),
+            total: count
+        });
+    } catch (error) {
+        console.error('Error fetching token eVND transfers:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
 
 /**
  * Retrieves a list of verified contracts for a workspace

@@ -73,6 +73,11 @@
 
         <!-- Navigation Chips -->
         <BaseChipGroup v-model="tab" mandatory>
+            <v-chip label size="small" value="evndtransfers" v-if="isCurrentTokenEvnd">
+                <v-icon class="mr-1" color="amber">mdi-star</v-icon>
+                eVND Transfers
+                <template v-if="!loadingStats">({{ contractStats.tokenTransferCount || 0 }})</template>
+            </v-chip>
             <v-chip label size="small" value="transfers">
                 Transfers
                 <template v-if="!loadingStats">({{ contractStats.tokenTransferCount || 0 }})</template>
@@ -89,6 +94,14 @@
         </BaseChipGroup>
 
         <!-- Tab Content -->
+        <div v-if="tab === 'evndtransfers'">
+            <v-card>
+                <v-card-text>
+                    <Token-Evnd-Transfers :address="address" :key="address" />
+                </v-card-text>
+            </v-card>
+        </div>
+
         <div v-if="tab === 'transfers'">
             <v-card>
                 <v-card-text>
@@ -125,12 +138,14 @@
 import { ref, computed, watch, inject } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { formatNumber, formatContractPattern } from '@/lib/utils';
+import { useEvndToken } from '@/composables/useEvndToken';
 
 import BaseChipGroup from './base/BaseChipGroup.vue';
 import TokenHeader from './TokenHeader.vue';
 import ERC20TokenHolders from './ERC20TokenHolders.vue';
 import ERC20ContractAnalytics from './ERC20ContractAnalytics.vue';
 import AddressERC20TokenTransfer from './AddressERC20TokenTransfer.vue';
+import TokenEvndTransfers from './TokenEvndTransfers.vue';
 import ContractDetails from './ContractDetails.vue';
 
 // Props
@@ -156,6 +171,9 @@ const router = useRouter();
 // Inject server instance
 const $server = inject('$server');
 
+// eVND token composable
+const { hasEvndToken, isEvndToken } = useEvndToken();
+
 // Reactive state
 const loadingStats = ref(true);
 const contractStats = ref({});
@@ -169,8 +187,16 @@ const tokenType = computed(() => {
     return 'erc20';
 });
 
+// Check if the current token being viewed is the eVND token
+const isCurrentTokenEvnd = computed(() => {
+    return hasEvndToken.value && isEvndToken(props.address);
+});
+
 const tab = computed({
-    get: () => route.query.tab || 'transfers',
+    get: () => {
+        const defaultTab = isCurrentTokenEvnd.value ? 'evndtransfers' : 'transfers';
+        return route.query.tab || defaultTab;
+    },
     set: (newTab) => {
         router.replace({ query: { ...route.query, tab: newTab } }).catch(() => {});
     }

@@ -1030,6 +1030,13 @@ export default {
                 return axios.get(resource, { params });
             },
 
+            getTokenEvndTransfers(address, options) {
+                const params = { firebaseUserId: firebaseUserId.value, workspace: workspace.value, ...options };
+
+                const resource = `${envStore.apiRoot}/api/contracts/${address}/evnd-transfers`;
+                return axios.get(resource, { params });
+            },
+
             getTokenHolders(address, options) {
                 const params = { firebaseUserId: firebaseUserId.value, workspace: workspace.value, ...options };
 
