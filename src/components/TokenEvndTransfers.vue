@@ -39,11 +39,19 @@
             </template>
 
             <template v-slot:item.blockNumber="{ item }">
-                <Hash-Link :type="'block'" :hash="item.transaction.blockNumber" />
+                <router-link
+                    :to="'/block/' + item.transaction.blockNumber"
+                    class="text-decoration-none"
+                >
+                    {{ item.transaction.blockNumber.toLocaleString() }}
+                </router-link>
             </template>
 
             <template v-slot:item.timestamp="{ item }">
-                {{ $dt(item.transaction.timestamp) }}
+                <div class="d-flex flex-column">
+                    <span>{{ $dt.shortDate(item.transaction.timestamp) }}</span>
+                    <small class="text-caption text-medium-emphasis">{{ $dt.fromNow(item.transaction.timestamp) }}</small>
+                </div>
             </template>
 
             <template v-slot:item.src="{ item }">
