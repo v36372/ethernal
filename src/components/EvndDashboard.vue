@@ -25,15 +25,28 @@
                                                 <div class="d-flex align-center">
                                                     <span class="component-icon mr-3">{{ component.icon }}</span>
                                                     <span class="component-name mr-4">{{ component.name }}</span>
-                                                    <v-chip
-                                                        :text="component.address"
-                                                        size="small"
-                                                        variant="outlined"
-                                                        color="primary"
-                                                        class="component-address"
-                                                        @click="navigateToAddress(component.fullAddress)"
-                                                        @click.middle="copyToClipboard(component.fullAddress)"
-                                                    ></v-chip>
+                                                    <template v-if="key === 'evnd_token'">
+                                                        <router-link :to="`/token/${component.fullAddress}`" style="text-decoration: none;">
+                                                            <v-chip
+                                                                :text="component.address"
+                                                                size="small"
+                                                                variant="outlined"
+                                                                color="primary"
+                                                                class="component-address"
+                                                            ></v-chip>
+                                                        </router-link>
+                                                    </template>
+                                                    <template v-else>
+                                                        <v-chip
+                                                            :text="component.address"
+                                                            size="small"
+                                                            variant="outlined"
+                                                            color="primary"
+                                                            class="component-address"
+                                                            @click="navigateToAddress(component.fullAddress)"
+                                                            @click.middle="copyToClipboard(component.fullAddress)"
+                                                        ></v-chip>
+                                                    </template>
                                                 </div>
                                             </div>
                                         </div>
